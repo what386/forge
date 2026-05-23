@@ -1,6 +1,7 @@
 use anyhow::Result;
 
-use crate::services::{run_template, PathLayout, TemplateResolver};
+use crate::storage::paths::PathLayout;
+use crate::templates::{run_template, TemplateResolver};
 
 pub fn run(template: String, name: String) -> Result<()> {
     let cwd = std::env::current_dir()?;

@@ -1,7 +1,8 @@
 use anyhow::Result;
 
-use crate::services::{PathLayout, TemplateResolver};
-use crate::templating::trust::TrustManager;
+use crate::storage::paths::PathLayout;
+use crate::storage::trust::TrustManager;
+use crate::templates::TemplateResolver;
 
 pub fn run_add(template: String, global: bool) -> Result<()> {
     let cwd = std::env::current_dir()?;

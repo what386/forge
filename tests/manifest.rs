@@ -1,4 +1,4 @@
-use forge::templating::manifest::load_and_validate;
+use forge::templates::manifest::load_and_validate;
 use std::fs;
 
 fn write_manifest(dir: &std::path::Path, body: &str) {
