@@ -46,10 +46,10 @@ pub enum Commands {
         forge list --global")]
     List {
         /// Show only global templates
-        #[arg(long, conflicts_with = "local")]
+        #[arg(short = 'g', long, conflicts_with = "local")]
         global: bool,
         /// Show only local templates
-        #[arg(long, conflicts_with = "global")]
+        #[arg(short = 'l', long, conflicts_with = "global")]
         local: bool,
     },
 
@@ -76,7 +76,7 @@ pub enum Commands {
         /// Name of the template to create
         name: String,
         /// Create in ~/.forge/templates/ instead of .forge/templates/
-        #[arg(long)]
+        #[arg(short = 'g', long)]
         global: bool,
     },
 
@@ -92,7 +92,7 @@ pub enum Commands {
         /// Name of the template to validate
         template: String,
         /// Validate a template in ~/.forge/templates/
-        #[arg(long)]
+        #[arg(short = 'g', long)]
         global: bool,
     },
 
@@ -125,7 +125,7 @@ pub enum TrustAction {
         /// Name of the template to trust
         template: String,
         /// Trust a template in ~/.forge/templates/
-        #[arg(long)]
+        #[arg(short = 'g', long)]
         global: bool,
     },
 
@@ -197,6 +197,35 @@ mod tests {
     }
 
     #[test]
+    fn list_parses_global_short_flag() {
+        let cli = Cli::parse_from(["forge", "list", "-g"]);
+        match cli.command {
+            Commands::List { global, local } => {
+                assert!(global);
+                assert!(!local);
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn list_parses_local_short_flag() {
+        let cli = Cli::parse_from(["forge", "list", "-l"]);
+        match cli.command {
+            Commands::List { global, local } => {
+                assert!(!global);
+                assert!(local);
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn list_rejects_global_and_local_short_together() {
+        assert!(Cli::try_parse_from(["forge", "list", "-g", "-l"]).is_err());
+    }
+
+    #[test]
     fn info_parses_template_name() {
         let cli = Cli::parse_from(["forge", "info", "fullstack"]);
         match cli.command {
@@ -208,6 +237,18 @@ mod tests {
     #[test]
     fn create_parses_name_and_global_flag() {
         let cli = Cli::parse_from(["forge", "create", "my-template", "--global"]);
+        match cli.command {
+            Commands::Create { name, global } => {
+                assert_eq!(name, "my-template");
+                assert!(global);
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn create_parses_name_and_global_short_flag() {
+        let cli = Cli::parse_from(["forge", "create", "my-template", "-g"]);
         match cli.command {
             Commands::Create { name, global } => {
                 assert_eq!(name, "my-template");
@@ -230,8 +271,34 @@ mod tests {
     }
 
     #[test]
+    fn validate_parses_template_and_global_short_flag() {
+        let cli = Cli::parse_from(["forge", "validate", "webapp", "-g"]);
+        match cli.command {
+            Commands::Validate { template, global } => {
+                assert_eq!(template, "webapp");
+                assert!(global);
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
     fn trust_add_parses_template_and_global_flag() {
         let cli = Cli::parse_from(["forge", "trust", "add", "webapp", "--global"]);
+        match cli.command {
+            Commands::Trust {
+                action: TrustAction::Add { template, global },
+            } => {
+                assert_eq!(template, "webapp");
+                assert!(global);
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn trust_add_parses_template_and_global_short_flag() {
+        let cli = Cli::parse_from(["forge", "trust", "add", "webapp", "-g"]);
         match cli.command {
             Commands::Trust {
                 action: TrustAction::Add { template, global },
