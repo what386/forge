@@ -46,3 +46,8 @@ clap_complete = { version = "4.5.61", optional = true }
 [dev-dependencies]
 tempfile = "3.13.0"
 
+[[bin]]
+name = "completions"
+path = "src/completions.rs"
+required-features = ["shell-completions"]
+
