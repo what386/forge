@@ -148,6 +148,13 @@ forge.prog.git.add("-A")
 forge.prog.git.commit("chore: initial scaffold")
 ```
 
+Stdlib helpers exposed on `forge`:
+
+- `forge.str.*`: `upper`, `lower`, `snake`, `kebab`, `pascal`, `camel`,
+  `trim`, `split`, `starts_with`, `ends_with`, `join`
+- `forge.table.*`: `merge`, `deep_merge`, `contains`, `keys`, `map`, `filter`
+- `forge.path.*`: `join`, `basename`, `stem`, `ext`
+
 For detailed API and manifest docs:
 
 - `docs/lua_api.md`

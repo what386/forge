@@ -247,8 +247,9 @@ This form is not evaluated; it emits `{{ ... }}` exactly.
 ```
 
 Use `forge.str.pascal`, `forge.str.camel`, `forge.str.snake`,
-`forge.str.kebab`, `forge.str.upper`, and `forge.str.lower` for string
-helpers. Pipe helper syntax is not supported.
+`forge.str.kebab`, `forge.str.upper`, `forge.str.lower`, `forge.str.trim`,
+`forge.str.split`, `forge.str.starts_with`, `forge.str.ends_with`, and
+`forge.str.join` for string helpers. Pipe helper syntax is not supported.
 
 Conditionals and loops are handled in `main.lua`, not in `.tpl` files. A later
 template-block design may add controlled block syntax without allowing arbitrary
@@ -404,6 +405,31 @@ forge.str.snake("hello-world")   --> "hello_world"
 forge.str.kebab("helloWorld")    --> "hello-world"
 forge.str.upper("hello")         --> "HELLO"
 forge.str.lower("HELLO")         --> "hello"
+forge.str.trim("  hi  ")         --> "hi"
+forge.str.split("a,b,c", ",")    --> { "a", "b", "c" }
+forge.str.starts_with("forge", "for") --> true
+forge.str.ends_with("forge", "rge")   --> true
+forge.str.join({ "a", "b" }, "-")     --> "a-b"
+```
+
+# Table Utilities
+
+```lua
+forge.table.merge({a=1}, {a=2, b=3})               --> { a=2, b=3 }
+forge.table.deep_merge({cfg={a=1}}, {cfg={b=2}})   --> { cfg={a=1, b=2} }
+forge.table.contains({ "a", "b" }, "b")            --> true
+forge.table.keys({ a=1, b=2 })                     --> { "a", "b" }
+forge.table.map({1,2,3}, function(v) return v*2 end) --> {2,4,6}
+forge.table.filter({1,2,3,4}, function(v) return v%2==0 end) --> {2,4}
+```
+
+# Path Utilities
+
+```lua
+forge.path.join("src", "main.rs")
+forge.path.basename("src/main.rs")  --> "main.rs"
+forge.path.stem("main.rs")          --> "main"
+forge.path.ext("main.rs")           --> "rs"
 ```
 
 ---
@@ -506,6 +532,21 @@ forge.prompt.select({ message, options, default? })
 
 -- Strings
 forge.str.camel / .pascal / .snake / .kebab / .upper / .lower
+forge.str.trim / .split / .starts_with / .ends_with / .join
+
+-- Tables
+forge.table.merge(t1, t2)
+forge.table.deep_merge(t1, t2)
+forge.table.contains(t, value)
+forge.table.keys(t)
+forge.table.map(t, fn)
+forge.table.filter(t, fn)
+
+-- Paths
+forge.path.join(...)
+forge.path.basename(path)
+forge.path.stem(path)
+forge.path.ext(path)
 
 -- Environment
 forge.env.*
