@@ -19,6 +19,12 @@ pub fn run_template(record: &TemplateRecord, project_name: &str, cwd: &Path) -> 
         .as_ref()
         .map(|r| r.permissions.clone())
         .unwrap_or_default();
+    let allowed_commands = record
+        .manifest
+        .requires
+        .as_ref()
+        .map(|r| r.commands.clone())
+        .unwrap_or_default();
 
     if !permissions.is_empty() {
         let trust = TrustManager::new(PathLayout::discover(cwd.to_path_buf())?.trust_file);
@@ -47,6 +53,8 @@ pub fn run_template(record: &TemplateRecord, project_name: &str, cwd: &Path) -> 
         project_dir,
         template_name: record.name.clone(),
         template_dir: record.dir.clone(),
+        allowed_commands,
+        permissions,
         prompts: Some(std::sync::Arc::new(StdioPrompts {})),
         ..RuntimeConfig::default()
     });
