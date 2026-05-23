@@ -1,7 +1,7 @@
 use anyhow::{anyhow, bail, Result};
 use std::path::Path;
 
-use crate::lua::{Runtime, RuntimeConfig};
+use crate::lua::{Logger, Runtime, RuntimeConfig};
 use crate::services::prompts::StdioPrompts;
 use crate::storage::paths::PathLayout;
 use crate::storage::trust::TrustManager;
@@ -55,6 +55,7 @@ pub fn run_template(record: &TemplateRecord, project_name: &str, cwd: &Path) -> 
         template_dir: record.dir.clone(),
         allowed_commands,
         permissions,
+        logger: Some(std::sync::Arc::new(StdioLogger {})),
         prompts: Some(std::sync::Arc::new(StdioPrompts {})),
         ..RuntimeConfig::default()
     });
@@ -62,6 +63,26 @@ pub fn run_template(record: &TemplateRecord, project_name: &str, cwd: &Path) -> 
     runtime
         .run(&main_lua.to_string_lossy())
         .map_err(|e| anyhow!(e.to_string()))
+}
+
+struct StdioLogger;
+
+impl Logger for StdioLogger {
+    fn info(&self, msg: &str) {
+        println!("{}", msg);
+    }
+
+    fn warn(&self, msg: &str) {
+        eprintln!("warn: {}", msg);
+    }
+
+    fn error(&self, msg: &str) {
+        eprintln!("error: {}", msg);
+    }
+
+    fn success(&self, msg: &str) {
+        println!("{}", msg);
+    }
 }
 
 fn confirm_stdin(prompt: &str) -> Result<bool> {
