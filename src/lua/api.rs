@@ -20,6 +20,7 @@ pub(crate) fn register_api(lua: &Lua, state: Rc<RefCell<RuntimeState>>) -> Resul
     register_args(lua, &forge, state.clone())?;
     register_prompt(lua, &forge, state.clone())?;
     register_strings(lua, &forge)?;
+    register_stdlib_scripts(lua)?;
     register_env(lua, &forge, state.clone())?;
     register_render(lua, &forge, state.clone())?;
     register_fs(lua, &forge, state.clone())?;
@@ -448,6 +449,17 @@ fn register_strings(lua: &Lua, forge: &Table) -> Result<(), LuaError> {
         )
         .map_err(lua_err)?;
     forge.set("str", str_t).map_err(lua_err)?;
+    Ok(())
+}
+
+fn register_stdlib_scripts(lua: &Lua) -> Result<(), LuaError> {
+    for (name, script) in [
+        ("table.lua", include_str!("stdlib/table.lua")),
+        ("str.lua", include_str!("stdlib/str.lua")),
+        ("path.lua", include_str!("stdlib/path.lua")),
+    ] {
+        lua.load(script).set_name(name).exec().map_err(lua_err)?;
+    }
     Ok(())
 }
 
