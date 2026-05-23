@@ -63,7 +63,7 @@ pub(crate) fn register_render(
         .map_err(lua_err)?;
 
     // The wrapper keeps debug access private after the sandbox removes the public debug table.
-    lua.load(include_str!("scripts/render_wrappers.lua"))
+    lua.load(include_str!("scripts/wrappers.lua"))
         .set_name("forge.render wrappers")
         .exec()
         .map_err(lua_err)
