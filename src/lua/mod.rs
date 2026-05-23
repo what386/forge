@@ -2,6 +2,7 @@ pub mod api;
 pub mod errors;
 pub mod exec;
 pub mod fs;
+pub mod prog;
 pub mod render;
 pub mod runtime;
 pub mod sandbox;
