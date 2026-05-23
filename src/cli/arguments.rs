@@ -10,7 +10,7 @@ use clap::{Parser, Subcommand};
     forge list\n  \
     forge info webapp\n  \
     forge create my-template\n  \
-    forge validate webapp")]
+    forge check webapp")]
 #[command(
     version,
     long_version = concat!(env!("CARGO_PKG_VERSION"), " (", env!("GIT_HASH"), ")")
@@ -80,18 +80,18 @@ pub enum Commands {
         global: bool,
     },
 
-    /// Validate a template without executing it
-    #[command(long_about = "Validate a template without executing it.\n\n\
+    /// Check a template without executing it
+    #[command(long_about = "Check a template without executing it.\n\n\
         Checks that manifest.toml is present and valid, main.lua parses without\n\
         syntax errors, all files referenced by render calls exist, and all\n\
         declared permissions are known values.\n\n\
         EXAMPLES:\n  \
-        forge validate webapp\n  \
-        forge validate my-template --global")]
-    Validate {
-        /// Name of the template to validate
+        forge check webapp\n  \
+        forge check my-template --global")]
+    Check {
+        /// Name of the template to check
         template: String,
-        /// Validate a template in ~/.forge/templates/
+        /// Check a template in ~/.forge/templates/
         #[arg(short = 'g', long)]
         global: bool,
     },
@@ -259,10 +259,10 @@ mod tests {
     }
 
     #[test]
-    fn validate_parses_template_and_global_flag() {
-        let cli = Cli::parse_from(["forge", "validate", "webapp", "--global"]);
+    fn check_parses_template_and_global_flag() {
+        let cli = Cli::parse_from(["forge", "check", "webapp", "--global"]);
         match cli.command {
-            Commands::Validate { template, global } => {
+            Commands::Check { template, global } => {
                 assert_eq!(template, "webapp");
                 assert!(global);
             }
@@ -271,10 +271,10 @@ mod tests {
     }
 
     #[test]
-    fn validate_parses_template_and_global_short_flag() {
-        let cli = Cli::parse_from(["forge", "validate", "webapp", "-g"]);
+    fn check_parses_template_and_global_short_flag() {
+        let cli = Cli::parse_from(["forge", "check", "webapp", "-g"]);
         match cli.command {
-            Commands::Validate { template, global } => {
+            Commands::Check { template, global } => {
                 assert_eq!(template, "webapp");
                 assert!(global);
             }
