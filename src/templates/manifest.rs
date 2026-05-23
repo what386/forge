@@ -44,6 +44,7 @@ pub struct Requires {
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Permission {
     EscapeCwd,
+    Execution,
     Network,
     ReadEnv,
 }
@@ -52,6 +53,7 @@ impl Permission {
     fn from_str(value: &str) -> Result<Self, ManifestError> {
         match value {
             "escape_cwd" => Ok(Self::EscapeCwd),
+            "execution" => Ok(Self::Execution),
             "network" => Ok(Self::Network),
             "read_env" => Ok(Self::ReadEnv),
             _ => Err(ManifestError::new(format!(

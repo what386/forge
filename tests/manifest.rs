@@ -28,7 +28,7 @@ values = ["fullstack", "web"]
 
 [requires]
 commands = ["cargo"]
-permissions = ["network", "read_env"]
+permissions = ["execution", "network", "read_env"]
 "#,
     );
 

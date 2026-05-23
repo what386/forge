@@ -212,7 +212,8 @@ fn fs_write_rejects_symlink_parent_escape() {
 #[cfg(unix)]
 #[test]
 fn exec_requires_declared_command() {
-    let (cfg, _tmp) = base_cfg();
+    let (mut cfg, _tmp) = base_cfg();
+    cfg.permissions = vec![Permission::Execution];
     let main = cfg.template_dir.join("main.lua");
     fs::write(&main, "forge.exec({'sh', '-c', 'true'})").expect("write main");
 
@@ -230,6 +231,7 @@ fn exec_requires_declared_command() {
 fn exec_clears_undeclared_environment() {
     let (mut cfg, _tmp) = base_cfg();
     cfg.allowed_commands = vec!["sh".to_string()];
+    cfg.permissions = vec![Permission::Execution];
     cfg.env_allowlist = vec!["PATH".to_string()];
     std::env::set_var("FORGE_SECRET_CLEAR_TEST_VALUE", "leaked");
     let main = cfg.template_dir.join("main.lua");
@@ -253,7 +255,7 @@ fn exec_clears_undeclared_environment() {
 fn exec_can_inherit_environment_with_read_env_permission() {
     let (mut cfg, _tmp) = base_cfg();
     cfg.allowed_commands = vec!["sh".to_string()];
-    cfg.permissions = vec![Permission::ReadEnv];
+    cfg.permissions = vec![Permission::Execution, Permission::ReadEnv];
     std::env::set_var("FORGE_SECRET_INHERIT_TEST_VALUE", "visible");
     let main = cfg.template_dir.join("main.lua");
     fs::write(
@@ -269,4 +271,21 @@ fn exec_can_inherit_environment_with_read_env_permission() {
     rt.run(main.to_string_lossy().as_ref()).expect("run");
     let out = fs::read_to_string(cfg.project_dir.join("env.txt")).expect("read env");
     assert_eq!(out, "visible\n");
+}
+
+#[cfg(unix)]
+#[test]
+fn exec_requires_execution_permission() {
+    let (mut cfg, _tmp) = base_cfg();
+    cfg.allowed_commands = vec!["sh".to_string()];
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.exec({'sh', '-c', 'true'})").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt
+        .run(main.to_string_lossy().as_ref())
+        .expect_err("requires permission");
+    assert!(err
+        .to_string()
+        .contains("requires [requires].permissions to include execution"));
 }

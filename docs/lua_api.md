@@ -273,6 +273,9 @@ forge.fs.remove(path)          -- primarily useful in on_error cleanup
 
 # Command Execution
 
+Templates must declare `execution` in `[requires].permissions` before
+calling `forge.exec`.
+
 Always pass commands as a table of arguments. Shell string execution is not
 supported — no shell interpolation, no injection surface.
 

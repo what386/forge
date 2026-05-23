@@ -167,12 +167,13 @@ Forge will display these to the user and ask for confirmation before running.
 
 ```toml
 [requires]
-permissions = ["escape_cwd", "network", "read_env"]
+permissions = ["escape_cwd", "execution", "network", "read_env"]
 ```
 
 | Permission   | What it unlocks |
 |--------------|-----------------|
 | `escape_cwd` | `forge.fs` and `forge.exec` `cwd` may reference paths outside the output directory |
+| `execution`  | Allows templates to call `forge.exec` and spawn external processes |
 | `network`    | Commands that make network requests (signals intent; not enforced at the syscall level in v1) |
 | `read_env`   | Access to environment variables beyond the default allowlist (`HOME`, `USER`, `PATH`, `SHELL`) |
 

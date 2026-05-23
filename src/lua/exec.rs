@@ -33,6 +33,12 @@ pub(crate) fn register_exec(
                     )));
                 }
                 let cfg = st.borrow().cfg.clone();
+                if !cfg.has_permission(Permission::Execution) {
+                    return Err(mlua::Error::external(LuaError::new(
+                        ErrorKind::Exec,
+                        "forge.exec requires [requires].permissions to include execution",
+                    )));
+                }
                 if !command_declared(&argv[0], &cfg.allowed_commands) {
                     return Err(mlua::Error::external(LuaError::new(
                         ErrorKind::Exec,
