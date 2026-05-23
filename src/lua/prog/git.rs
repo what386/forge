@@ -44,7 +44,7 @@ pub(crate) fn register_git(
                 )));
             }
             let mut argv = vec!["git".to_string(), "add".to_string()];
-            argv.extend(args.into_iter());
+            argv.extend(args);
             run_exec(
                 lua,
                 st.clone(),
