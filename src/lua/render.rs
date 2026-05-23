@@ -7,6 +7,7 @@ use once_cell::sync::Lazy;
 use regex::Regex;
 use std::cell::RefCell;
 use std::fs;
+use std::path::Path;
 use std::rc::Rc;
 
 static TEMPLATE_BLOCK_RE: Lazy<Regex> =
@@ -40,6 +41,30 @@ pub(crate) fn register_render(
             .map_err(lua_err)?,
         )
         .map_err(lua_err)?;
+    let st = state.clone();
+    forge
+        .set(
+            "__render_dir_native",
+            lua.create_function(move |lua, (src_dir, scope): (String, Table)| {
+                Runtime::ensure_init(lua, st.clone()).map_err(mlua::Error::external)?;
+                render_dir(lua, &st, &src_dir, &src_dir, scope).map_err(mlua::Error::external)
+            })
+            .map_err(lua_err)?,
+        )
+        .map_err(lua_err)?;
+    let st = state.clone();
+    forge
+        .set(
+            "__render_dir_to_native",
+            lua.create_function(
+                move |lua, (src_dir, dst_dir, scope): (String, String, Table)| {
+                    Runtime::ensure_init(lua, st.clone()).map_err(mlua::Error::external)?;
+                    render_dir(lua, &st, &src_dir, &dst_dir, scope).map_err(mlua::Error::external)
+                },
+            )
+            .map_err(lua_err)?,
+        )
+        .map_err(lua_err)?;
 
     // The wrapper keeps debug access private after the sandbox removes the public debug table.
     lua.load(include_str!("scripts/render_wrappers.lua"))
@@ -67,6 +92,83 @@ fn render_file(
         fs::create_dir_all(parent).map_err(|e| LuaError::new(ErrorKind::Render, e.to_string()))?;
     }
     fs::write(dst_abs, out).map_err(|e| LuaError::new(ErrorKind::Render, e.to_string()))
+}
+
+fn render_dir(
+    lua: &Lua,
+    state: &Rc<RefCell<RuntimeState>>,
+    src_dir_rel: &str,
+    dst_dir_rel: &str,
+    scope: Table,
+) -> Result<(), LuaError> {
+    let cfg = state.borrow().cfg.clone();
+    let src_root = cfg.template_dir.join("files").join(src_dir_rel);
+    if !src_root.is_dir() {
+        return Err(LuaError::new(
+            ErrorKind::Render,
+            format!("source directory not found: {}", src_dir_rel),
+        ));
+    }
+
+    for (abs, rel) in walk_files(&src_root)? {
+        let rel_normalized = rel.replace('\\', "/");
+        let dst_rel = if dst_dir_rel.is_empty() || dst_dir_rel == "." {
+            rel_normalized.clone()
+        } else {
+            format!("{}/{}", dst_dir_rel.trim_end_matches('/'), rel_normalized)
+        };
+
+        if rel_normalized.ends_with(".tpl") {
+            let dst_rel = dst_rel.trim_end_matches(".tpl").to_string();
+            let src_rel = format!("{}/{}", src_dir_rel.trim_end_matches('/'), rel_normalized);
+            let _ = abs;
+            render_file(lua, state, &src_rel, &dst_rel, scope.clone())?;
+            continue;
+        }
+
+        let dst_abs = safe_project_path(&cfg.project_dir, &dst_rel)?;
+        if let Some(parent) = dst_abs.parent() {
+            fs::create_dir_all(parent)
+                .map_err(|e| LuaError::new(ErrorKind::Render, e.to_string()))?;
+        }
+        fs::copy(&abs, dst_abs).map_err(|e| LuaError::new(ErrorKind::Render, e.to_string()))?;
+    }
+
+    Ok(())
+}
+
+fn walk_files(root: &Path) -> Result<Vec<(std::path::PathBuf, String)>, LuaError> {
+    fn inner(
+        root: &Path,
+        current: &Path,
+        out: &mut Vec<(std::path::PathBuf, String)>,
+    ) -> Result<(), LuaError> {
+        for entry in
+            fs::read_dir(current).map_err(|e| LuaError::new(ErrorKind::Render, e.to_string()))?
+        {
+            let entry = entry.map_err(|e| LuaError::new(ErrorKind::Render, e.to_string()))?;
+            let path = entry.path();
+            let ty = entry
+                .file_type()
+                .map_err(|e| LuaError::new(ErrorKind::Render, e.to_string()))?;
+            if ty.is_dir() {
+                inner(root, &path, out)?;
+            } else if ty.is_file() {
+                let rel = path
+                    .strip_prefix(root)
+                    .map_err(|e| LuaError::new(ErrorKind::Render, e.to_string()))?
+                    .to_string_lossy()
+                    .to_string();
+                out.push((path, rel));
+            }
+        }
+        Ok(())
+    }
+
+    let mut out = Vec::new();
+    inner(root, root, &mut out)?;
+    out.sort_by(|a, b| a.1.cmp(&b.1));
+    Ok(out)
 }
 
 fn interpolate(lua: &Lua, input: &str, file: &str, scope: Table) -> Result<String, LuaError> {

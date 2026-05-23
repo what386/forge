@@ -61,6 +61,54 @@ pub(crate) fn register_fs(
         .map_err(lua_err)?,
     )
     .map_err(lua_err)?;
+    let st = state.clone();
+    fs_t.set(
+        "add",
+        lua.create_function(move |lua, (src_rel, dst_rel): (String, String)| {
+            Runtime::ensure_init(lua, st.clone()).map_err(mlua::Error::external)?;
+            let src = st.borrow().cfg.template_dir.join("files").join(&src_rel);
+            if !src.is_file() {
+                return Err(mlua::Error::external(LuaError::new(
+                    ErrorKind::SandboxViolation,
+                    format!("source file not found: {}", src_rel),
+                )));
+            }
+            let dst = safe_project_path(&st.borrow().cfg.project_dir, &dst_rel)
+                .map_err(mlua::Error::external)?;
+            if let Some(parent) = dst.parent() {
+                fs::create_dir_all(parent).map_err(|e| {
+                    mlua::Error::external(LuaError::new(ErrorKind::SandboxViolation, e.to_string()))
+                })?;
+            }
+            fs::copy(src, dst).map_err(|e| {
+                mlua::Error::external(LuaError::new(ErrorKind::SandboxViolation, e.to_string()))
+            })?;
+            Ok(())
+        })
+        .map_err(lua_err)?,
+    )
+    .map_err(lua_err)?;
+    let st = state.clone();
+    fs_t.set(
+        "remove",
+        lua.create_function(move |lua, rel: String| {
+            Runtime::ensure_init(lua, st.clone()).map_err(mlua::Error::external)?;
+            let p = safe_project_path(&st.borrow().cfg.project_dir, &rel)
+                .map_err(mlua::Error::external)?;
+            if p.is_dir() {
+                fs::remove_dir_all(p).map_err(|e| {
+                    mlua::Error::external(LuaError::new(ErrorKind::SandboxViolation, e.to_string()))
+                })?;
+            } else if p.exists() {
+                fs::remove_file(p).map_err(|e| {
+                    mlua::Error::external(LuaError::new(ErrorKind::SandboxViolation, e.to_string()))
+                })?;
+            }
+            Ok(())
+        })
+        .map_err(lua_err)?,
+    )
+    .map_err(lua_err)?;
     forge.set("fs", fs_t).map_err(lua_err)
 }
 

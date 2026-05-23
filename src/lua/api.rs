@@ -343,6 +343,59 @@ fn register_prompt(
             .map_err(lua_err)?,
         )
         .map_err(lua_err)?;
+    let st = state.clone();
+    prompt_t
+        .set(
+            "confirm",
+            lua.create_function(move |lua, (msg, opts): (String, Option<Table>)| {
+                Runtime::ensure_init(lua, st.clone()).map_err(mlua::Error::external)?;
+                let prompts = st.borrow().cfg.prompts.clone().ok_or_else(|| {
+                    mlua::Error::external(LuaError::new(
+                        ErrorKind::Abort,
+                        "prompt provider not configured",
+                    ))
+                })?;
+                let default = opts
+                    .and_then(|t| t.get::<Option<bool>>("default").ok().flatten())
+                    .unwrap_or(false);
+                prompts
+                    .confirm(&msg, PromptConfirmOptions { default })
+                    .map_err(mlua::Error::external)
+            })
+            .map_err(lua_err)?,
+        )
+        .map_err(lua_err)?;
+    let st = state.clone();
+    prompt_t
+        .set(
+            "select",
+            lua.create_function(move |lua, schema: Table| {
+                Runtime::ensure_init(lua, st.clone()).map_err(mlua::Error::external)?;
+                let prompts = st.borrow().cfg.prompts.clone().ok_or_else(|| {
+                    mlua::Error::external(LuaError::new(
+                        ErrorKind::Abort,
+                        "prompt provider not configured",
+                    ))
+                })?;
+                let message = schema
+                    .get::<Option<String>>("message")?
+                    .unwrap_or_else(|| "Select".to_string());
+                let options_t: Table = schema.get("options")?;
+                let options = options_t
+                    .sequence_values::<String>()
+                    .collect::<Result<Vec<_>, _>>()?;
+                let default = schema.get::<Option<String>>("default")?.unwrap_or_default();
+                prompts
+                    .select(PromptSelectOptions {
+                        message,
+                        options,
+                        default,
+                    })
+                    .map_err(mlua::Error::external)
+            })
+            .map_err(lua_err)?,
+        )
+        .map_err(lua_err)?;
     forge.set("prompt", prompt_t).map_err(lua_err)?;
     Ok(())
 }

@@ -3,16 +3,12 @@ local getinfo = debug.getinfo
 local getupvalue = debug.getupvalue
 local render_native = forge.__render_native
 local render_to_native = forge.__render_to_native
+local render_dir_native = forge.__render_dir_native
+local render_dir_to_native = forge.__render_dir_to_native
 
 local function capture_scope(caller_func)
     local scope = {}
     local index = 1
-    -- Stack depth assumption:
-    --   level 1 = capture_scope
-    --   level 2 = forge.render / forge.render_to wrapper
-    --   level 3 = Lua call site that invoked forge.render(...)
-    -- We intentionally read locals from level 3 so template blocks can
-    -- evaluate against the caller's lexical scope.
     while true do
         local name, value = getlocal(3, index)
         if name == nil then break end
@@ -46,5 +42,17 @@ forge.render_to = function(src, dst)
     return render_to_native(src, dst, capture_scope(caller and caller.func))
 end
 
+forge.render_dir = function(src)
+    local caller = getinfo(2, "f")
+    return render_dir_native(src, capture_scope(caller and caller.func))
+end
+
+forge.render_dir_to = function(src, dst)
+    local caller = getinfo(2, "f")
+    return render_dir_to_native(src, dst, capture_scope(caller and caller.func))
+end
+
 forge.__render_native = nil
 forge.__render_to_native = nil
+forge.__render_dir_native = nil
+forge.__render_dir_to_native = nil
