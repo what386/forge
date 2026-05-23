@@ -14,6 +14,3 @@
 - [ ] add stdlib
       @created 2026-05-23 23:21
 
-- [ ] stdlib
-      @created 2026-05-23 23:51
-
