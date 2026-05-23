@@ -1,5 +1,5 @@
-use forge::lua::{Runtime, RuntimeConfig};
-use forge::templates::manifest::Permission;
+use forge_te::lua::{Runtime, RuntimeConfig};
+use forge_te::templates::manifest::Permission;
 use std::fs;
 
 fn base_cfg() -> (RuntimeConfig, tempfile::TempDir) {

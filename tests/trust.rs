@@ -1,4 +1,4 @@
-use forge::storage::trust::TrustManager;
+use forge_te::storage::trust::TrustManager;
 use std::fs;
 
 fn mk_dir(name: &str) -> (tempfile::TempDir, std::path::PathBuf, std::path::PathBuf) {
