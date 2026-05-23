@@ -127,6 +127,19 @@ pub enum Commands {
         #[command(subcommand)]
         action: ConfigAction,
     },
+
+    /// Manage remote template packages
+    #[command(long_about = "Manage remote template packages.\n\n\
+        EXAMPLES:\n  \
+        forge package probe https://github.com/alice/forge-templates.git\n  \
+        forge package install https://github.com/alice/forge-templates.git fullstack\n  \
+        forge package remove fullstack\n  \
+        forge package update\n  \
+        forge package list")]
+    Package {
+        #[command(subcommand)]
+        action: PackageAction,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -186,6 +199,37 @@ pub enum ConfigAction {
     List,
     /// Open config.toml in $EDITOR
     Edit,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum PackageAction {
+    /// Probe templates from a remote repository
+    Probe {
+        /// Git URL for the template repository
+        repo: String,
+    },
+    /// Install templates from a remote repository
+    Install {
+        /// Git URL for the template repository
+        repo: String,
+        /// Template name(s) to install
+        templates: Vec<String>,
+        /// Prompt to select template(s) when names are omitted
+        #[arg(long)]
+        interactive: bool,
+    },
+    /// Remove installed template package(s)
+    Remove {
+        /// Installed package/template names to remove (all if omitted)
+        names: Vec<String>,
+    },
+    /// Update installed template package(s)
+    Update {
+        /// Installed package/template names to update (all if omitted)
+        names: Vec<String>,
+    },
+    /// List installed template packages
+    List,
 }
 
 #[cfg(test)]
@@ -433,6 +477,66 @@ mod tests {
             Commands::Config {
                 action: ConfigAction::Edit
             }
+        ));
+    }
+
+    #[test]
+    fn package_probe_parses_repo() {
+        let cli = Cli::parse_from([
+            "forge",
+            "package",
+            "probe",
+            "https://github.com/alice/forge-templates.git",
+        ]);
+        assert!(matches!(
+            cli.command,
+            Commands::Package {
+                action: PackageAction::Probe { repo }
+            } if repo == "https://github.com/alice/forge-templates.git"
+        ));
+    }
+
+    #[test]
+    fn package_install_parses_repo_templates_and_interactive() {
+        let cli = Cli::parse_from([
+            "forge",
+            "package",
+            "install",
+            "https://github.com/alice/forge-templates.git",
+            "fullstack",
+            "rust",
+            "--interactive",
+        ]);
+        assert!(matches!(
+            cli.command,
+            Commands::Package {
+                action: PackageAction::Install {
+                    repo,
+                    templates,
+                    interactive,
+                }
+            } if repo == "https://github.com/alice/forge-templates.git"
+                && templates == vec!["fullstack".to_string(), "rust".to_string()]
+                && interactive
+        ));
+    }
+
+    #[test]
+    fn package_remove_and_update_parse_optional_names() {
+        let remove_cli = Cli::parse_from(["forge", "package", "remove", "fullstack", "rust"]);
+        assert!(matches!(
+            remove_cli.command,
+            Commands::Package {
+                action: PackageAction::Remove { names }
+            } if names == vec!["fullstack".to_string(), "rust".to_string()]
+        ));
+
+        let update_cli = Cli::parse_from(["forge", "package", "update"]);
+        assert!(matches!(
+            update_cli.command,
+            Commands::Package {
+                action: PackageAction::Update { names }
+            } if names.is_empty()
         ));
     }
 }

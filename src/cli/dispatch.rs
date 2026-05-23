@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use crate::cli::arguments::{Cli, Commands, ConfigAction, TrustAction};
+use crate::cli::arguments::{Cli, Commands, ConfigAction, PackageAction, TrustAction};
 use crate::cli::commands;
 
 impl Cli {
@@ -25,6 +25,17 @@ impl Cli {
                 ConfigAction::Get { key } => commands::config::run_get(key),
                 ConfigAction::List => commands::config::run_list(),
                 ConfigAction::Edit => commands::config::run_edit(),
+            },
+            Commands::Package { action } => match action {
+                PackageAction::Probe { repo } => commands::package::run_probe(repo),
+                PackageAction::Install {
+                    repo,
+                    templates,
+                    interactive,
+                } => commands::package::run_install(repo, templates, interactive),
+                PackageAction::Remove { names } => commands::package::run_remove(names),
+                PackageAction::Update { names } => commands::package::run_update(names),
+                PackageAction::List => commands::package::run_list(),
             },
         }
     }

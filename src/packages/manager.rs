@@ -297,7 +297,7 @@ mod tests {
     #[test]
     fn install_templates_rejects_conflicting_repo() {
         let home = tempfile::tempdir().expect("home");
-        unsafe { std::env::set_var("HOME", home.path()) };
+        std::env::set_var("HOME", home.path());
         let manager = PackageManager::global().expect("manager");
         let repo = tempfile::tempdir().expect("repo");
         let probed = ProbedPackage {
