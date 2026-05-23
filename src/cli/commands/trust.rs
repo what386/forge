@@ -1,7 +1,7 @@
 use anyhow::Result;
 
-use crate::storage::paths::PathLayout;
-use crate::storage::trust::TrustManager;
+use crate::services::paths::PathLayout;
+use crate::services::storage::trust::TrustManager;
 use crate::templates::TemplateResolver;
 
 pub fn run_add(template: String, global: bool) -> Result<()> {

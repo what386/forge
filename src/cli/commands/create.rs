@@ -1,16 +1,17 @@
 use anyhow::{bail, Context, Result};
 use std::fs;
 
-use crate::storage::config::{ConfigStorage, UserConfig};
-use crate::storage::paths::PathLayout;
+use crate::services::storage::config::{ConfigStorage, UserConfig};
+use crate::services::storage::index::TemplateIndexStorage;
+use crate::services::paths::PathLayout;
 
 pub fn run(name: String, global: bool) -> Result<()> {
     let cwd = std::env::current_dir()?;
     let layout = PathLayout::discover(cwd)?;
-    let root = if global {
-        layout.global_templates
+    let (root, forge_root) = if global {
+        (layout.global_templates, layout.global_root)
     } else {
-        layout.local_templates
+        (layout.local_templates, layout.local_root)
     };
     let dir = root.join(&name);
     if dir.exists() {
@@ -38,6 +39,9 @@ pub fn run(name: String, global: bool) -> Result<()> {
         dir.join("files").join("README.md.tpl"),
         "# {{ forge.project.name }}\n",
     )?;
+
+    let index = TemplateIndexStorage::new(&forge_root);
+    index.upsert_template(&name, &format!("templates/{}", name))?;
 
     println!("created {}", dir.display());
     Ok(())

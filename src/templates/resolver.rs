@@ -2,7 +2,7 @@ use anyhow::{anyhow, bail, Context, Result};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use crate::storage::paths::PathLayout;
+use crate::services::paths::PathLayout;
 use crate::templates::manifest::{load_and_validate, Manifest};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

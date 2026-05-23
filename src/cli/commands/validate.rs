@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use crate::storage::paths::PathLayout;
+use crate::services::paths::PathLayout;
 use crate::templates::{validate_template, TemplateResolver};
 
 pub fn run(template: String, global: bool) -> Result<()> {
