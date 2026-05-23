@@ -9,6 +9,7 @@ use toml::Value;
 #[serde(default)]
 pub struct AppConfig {
     pub user: UserConfig,
+    pub templates: TemplatesConfig,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -16,6 +17,28 @@ pub struct AppConfig {
 pub struct UserConfig {
     pub name: String,
     pub email: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "lowercase")]
+pub enum TemplateScope {
+    #[default]
+    Local,
+    Global,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(default)]
+pub struct TemplatesConfig {
+    pub default_scope: TemplateScope,
+}
+
+impl Default for TemplatesConfig {
+    fn default() -> Self {
+        Self {
+            default_scope: TemplateScope::Local,
+        }
+    }
 }
 
 pub struct ConfigStorage {
@@ -197,6 +220,10 @@ mod tests {
         let storage = ConfigStorage::new(&path).expect("storage");
         assert_eq!(storage.get_config().user.name, "");
         assert_eq!(storage.get_config().user.email, "");
+        assert_eq!(
+            storage.get_config().templates.default_scope,
+            TemplateScope::Local
+        );
         assert!(!path.exists());
         cleanup(&path);
     }
