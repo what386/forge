@@ -1,6 +1,6 @@
 use anyhow::Result;
 
-use crate::cli::arguments::{Cli, Commands, TrustAction};
+use crate::cli::arguments::{Cli, Commands, ConfigAction, TrustAction};
 use crate::cli::commands;
 
 impl Cli {
@@ -15,6 +15,12 @@ impl Cli {
                 TrustAction::Add { template, global } => commands::trust::run_add(template, global),
                 TrustAction::Remove { template } => commands::trust::run_remove(template),
                 TrustAction::List => commands::trust::run_list(),
+            },
+            Commands::Config { action } => match action {
+                ConfigAction::Set { key, value } => commands::config::run_set(key, value),
+                ConfigAction::Get { key } => commands::config::run_get(key),
+                ConfigAction::List => commands::config::run_list(),
+                ConfigAction::Edit => commands::config::run_edit(),
             },
         }
     }

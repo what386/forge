@@ -109,6 +109,21 @@ pub enum Commands {
         #[command(subcommand)]
         action: TrustAction,
     },
+
+    /// Manage Forge configuration
+    #[command(
+        long_about = "Manage Forge configuration stored in ~/.forge/config.toml.\n\n\
+        EXAMPLES:\n  \
+        forge config set user.name \"Alice\"\n  \
+        forge config set user.email \"alice@example.com\"\n  \
+        forge config get user.name\n  \
+        forge config list\n  \
+        forge config edit"
+    )]
+    Config {
+        #[command(subcommand)]
+        action: ConfigAction,
+    },
 }
 
 #[derive(Subcommand, Debug)]
@@ -148,6 +163,26 @@ pub enum TrustAction {
         forge trust list"
     )]
     List,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum ConfigAction {
+    /// Set a config key
+    Set {
+        /// Dot-separated config key path
+        key: String,
+        /// Config value (TOML literal or plain string)
+        value: String,
+    },
+    /// Get a config key
+    Get {
+        /// Dot-separated config key path
+        key: String,
+    },
+    /// List all config keys
+    List,
+    /// Open config.toml in $EDITOR
+    Edit,
 }
 
 #[cfg(test)]
@@ -328,6 +363,50 @@ mod tests {
             cli.command,
             Commands::Trust {
                 action: TrustAction::List
+            }
+        ));
+    }
+
+    #[test]
+    fn config_set_parses_key_and_value() {
+        let cli = Cli::parse_from(["forge", "config", "set", "user.name", "Alice"]);
+        assert!(matches!(
+            cli.command,
+            Commands::Config {
+                action: ConfigAction::Set { key, value }
+            } if key == "user.name" && value == "Alice"
+        ));
+    }
+
+    #[test]
+    fn config_get_parses_key() {
+        let cli = Cli::parse_from(["forge", "config", "get", "user.email"]);
+        assert!(matches!(
+            cli.command,
+            Commands::Config {
+                action: ConfigAction::Get { key }
+            } if key == "user.email"
+        ));
+    }
+
+    #[test]
+    fn config_list_parses() {
+        let cli = Cli::parse_from(["forge", "config", "list"]);
+        assert!(matches!(
+            cli.command,
+            Commands::Config {
+                action: ConfigAction::List
+            }
+        ));
+    }
+
+    #[test]
+    fn config_edit_parses() {
+        let cli = Cli::parse_from(["forge", "config", "edit"]);
+        assert!(matches!(
+            cli.command,
+            Commands::Config {
+                action: ConfigAction::Edit
             }
         ));
     }
