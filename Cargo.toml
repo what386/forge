@@ -2,7 +2,12 @@
 name = "forge-te"
 version = "0.1.0"
 edition = "2021"
-# TODO: add metadata
+license = "MIT OR Apache-2.0"
+readme = "README.md"
+description = "A lua-powered templating engine."
+repository = "https://github.com/what386/forge"
+keywords = ["templates", "lua", "scaffolding", "codegen"]
+categories = ["command-line-utilities", "development-tools", "template-engine"]
 
 exclude = [
     ".github",
