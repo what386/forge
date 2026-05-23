@@ -193,7 +193,10 @@ fn collect_files(root: &Path, current: &Path, out: &mut Vec<String>) -> TrustRes
         let path = entry.path();
 
         if ty.is_symlink() {
-            continue;
+            return Err(TrustError::InvalidPath(format!(
+                "template contains symlink: {}",
+                path.display()
+            )));
         }
         if ty.is_dir() {
             collect_files(root, &path, out)?;
