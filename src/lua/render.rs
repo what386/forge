@@ -125,7 +125,11 @@ fn render_dir(
 
         if rel_normalized.ends_with(".tpl") {
             let dst_rel = dst_rel.trim_end_matches(".tpl").to_string();
-            let src_rel = format!("{}/{}", src_dir_rel.trim_end_matches('/'), rel_normalized);
+            let src_rel = if src_dir_rel.is_empty() || src_dir_rel == "." {
+                rel_normalized.clone()
+            } else {
+                format!("{}/{}", src_dir_rel.trim_end_matches('/'), rel_normalized)
+            };
             let _ = abs;
             render_file(lua, state, &src_rel, &dst_rel, scope.clone())?;
             continue;
