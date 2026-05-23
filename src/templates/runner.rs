@@ -28,15 +28,23 @@ pub fn run_template(record: &TemplateRecord, project_name: &str, cwd: &Path) -> 
 
     if !permissions.is_empty() {
         let trust = TrustManager::new(PathLayout::discover(cwd.to_path_buf())?.trust_file);
-        let trusted = trust.is_dir_trusted(&record.dir).unwrap_or(false);
+        let trusted = trust
+            .is_dir_trusted(&record.dir)
+            .map_err(|e| anyhow!(e.to_string()))?;
         if !trusted {
             eprintln!(
                 "Template '{}' requests elevated permissions: {:?}",
                 record.name, permissions
             );
-            if !confirm_stdin("Proceed? (y/n): ")? {
+            eprintln!(
+                "Grant and trust this template now? Trust is checksum-bound and will be invalidated on template changes."
+            );
+            if !confirm_stdin("Grant permissions and continue? (y/n): ")? {
                 bail!("aborted by user");
             }
+            trust
+                .trust_dir(&record.dir)
+                .map_err(|e| anyhow!(format!("failed to persist trust: {}", e)))?;
         }
     }
 
