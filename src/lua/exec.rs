@@ -12,6 +12,12 @@ use std::process::{Command, Stdio};
 use std::rc::Rc;
 use std::sync::Arc;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ExecMode {
+    Raw,
+    Program,
+}
+
 pub(crate) fn register_exec(
     lua: &Lua,
     forge: &Table,
@@ -32,64 +38,93 @@ pub(crate) fn register_exec(
                         "empty command",
                     )));
                 }
-                let cfg = st.borrow().cfg.clone();
-                if !cfg.has_permission(Permission::Execution) {
-                    return Err(mlua::Error::external(LuaError::new(
-                        ErrorKind::Exec,
-                        "forge.exec requires [requires].permissions to include execution",
-                    )));
-                }
-                if !command_declared(&argv[0], &cfg.allowed_commands) {
-                    return Err(mlua::Error::external(LuaError::new(
-                        ErrorKind::Exec,
-                        format!("command not declared in [requires].commands: {}", argv[0]),
-                    )));
-                }
                 let mut opts = ExecOptions::default();
                 if let Some(t) = opts_t {
                     opts.cwd = t.get::<Option<String>>("cwd")?.unwrap_or_default();
                     opts.allow_fail = t.get::<Option<bool>>("allow_fail")?.unwrap_or(false);
                     opts.passthrough = t.get::<Option<bool>>("passthrough")?.unwrap_or(false);
                 }
-                let cwd = if opts.cwd.is_empty() {
-                    cfg.project_dir.canonicalize().map_err(|e| {
-                        mlua::Error::external(LuaError::new(ErrorKind::Exec, e.to_string()))
-                    })?
-                } else {
-                    safe_project_path_with_escape(
-                        &cfg.project_dir,
-                        &opts.cwd,
-                        cfg.has_permission(Permission::EscapeCwd),
-                    )
-                    .map_err(mlua::Error::external)?
-                };
-                let runner: Arc<dyn ExecRunner> = st
-                    .borrow()
-                    .cfg
-                    .exec
-                    .clone()
-                    .unwrap_or_else(|| Arc::new(DefaultExecRunner {}));
-                let inherit_env = cfg.has_permission(Permission::ReadEnv);
-                let env_allowlist = cfg.effective_env_allowlist();
-                let res = runner
-                    .run(&argv, &opts, &cwd, &env_allowlist, inherit_env)
-                    .map_err(mlua::Error::external)?;
-                if !res.ok && !opts.allow_fail {
-                    return Err(mlua::Error::external(Runtime::abort(
-                        st.clone(),
-                        &res.stderr,
-                    )));
-                }
-                let out = lua.create_table()?;
-                out.set("ok", res.ok)?;
-                out.set("code", res.code)?;
-                out.set("stdout", res.stdout)?;
-                out.set("stderr", res.stderr)?;
-                Ok(out)
+                run_exec(lua, st.clone(), argv, opts, ExecMode::Raw)
             })
             .map_err(lua_err)?,
         )
         .map_err(lua_err)
+}
+
+pub(crate) fn run_exec(
+    lua: &Lua,
+    state: Rc<RefCell<RuntimeState>>,
+    argv: Vec<String>,
+    opts: ExecOptions,
+    mode: ExecMode,
+) -> mlua::Result<Table> {
+    let cfg = state.borrow().cfg.clone();
+    if argv.is_empty() {
+        return Err(mlua::Error::external(LuaError::new(
+            ErrorKind::Exec,
+            "empty command",
+        )));
+    }
+    match mode {
+        ExecMode::Raw => {
+            if !cfg.has_permission(Permission::Execution) {
+                return Err(mlua::Error::external(LuaError::new(
+                    ErrorKind::Exec,
+                    "forge.exec requires [requires].permissions to include execution",
+                )));
+            }
+            if !command_declared(&argv[0], &cfg.allowed_commands) {
+                return Err(mlua::Error::external(LuaError::new(
+                    ErrorKind::Exec,
+                    format!("command not declared in [requires].commands: {}", argv[0]),
+                )));
+            }
+        }
+        ExecMode::Program => {
+            if !command_declared(&argv[0], &cfg.allowed_programs) {
+                return Err(mlua::Error::external(LuaError::new(
+                    ErrorKind::Exec,
+                    format!("program not declared in [requires].programs: {}", argv[0]),
+                )));
+            }
+        }
+    }
+
+    let cwd = if opts.cwd.is_empty() {
+        cfg.project_dir
+            .canonicalize()
+            .map_err(|e| mlua::Error::external(LuaError::new(ErrorKind::Exec, e.to_string())))?
+    } else {
+        safe_project_path_with_escape(
+            &cfg.project_dir,
+            &opts.cwd,
+            cfg.has_permission(Permission::EscapeCwd),
+        )
+        .map_err(mlua::Error::external)?
+    };
+    let runner: Arc<dyn ExecRunner> = state
+        .borrow()
+        .cfg
+        .exec
+        .clone()
+        .unwrap_or_else(|| Arc::new(DefaultExecRunner {}));
+    let inherit_env = cfg.has_permission(Permission::ReadEnv);
+    let env_allowlist = cfg.effective_env_allowlist();
+    let res = runner
+        .run(&argv, &opts, &cwd, &env_allowlist, inherit_env)
+        .map_err(mlua::Error::external)?;
+    if !res.ok && !opts.allow_fail {
+        return Err(mlua::Error::external(Runtime::abort(
+            state.clone(),
+            &res.stderr,
+        )));
+    }
+    let out = lua.create_table()?;
+    out.set("ok", res.ok)?;
+    out.set("code", res.code)?;
+    out.set("stdout", res.stdout)?;
+    out.set("stderr", res.stderr)?;
+    Ok(out)
 }
 
 pub struct DefaultExecRunner {}

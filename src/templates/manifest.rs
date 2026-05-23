@@ -38,6 +38,7 @@ pub struct Tags {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Requires {
     pub commands: Vec<String>,
+    pub programs: Vec<String>,
     pub permissions: Vec<Permission>,
 }
 
@@ -193,6 +194,16 @@ fn parse_requires(value: &toml::Value) -> Result<Requires, ManifestError> {
         }
     }
 
+    let programs = optional_string_array(tbl, "requires", "programs")?.unwrap_or_default();
+    for program in &programs {
+        if !command_exists(program) {
+            return Err(ManifestError::new(format!(
+                "required program not found on PATH: {}",
+                program
+            )));
+        }
+    }
+
     let permission_strings =
         optional_string_array(tbl, "requires", "permissions")?.unwrap_or_default();
     let mut permissions = Vec::with_capacity(permission_strings.len());
@@ -202,6 +213,7 @@ fn parse_requires(value: &toml::Value) -> Result<Requires, ManifestError> {
 
     Ok(Requires {
         commands,
+        programs,
         permissions,
     })
 }

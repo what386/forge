@@ -5,6 +5,7 @@ use crate::lua::{Logger, Runtime, RuntimeConfig};
 use crate::services::prompts::StdioPrompts;
 use crate::storage::paths::PathLayout;
 use crate::storage::trust::TrustManager;
+use crate::templates::manifest::Permission;
 use crate::templates::resolver::TemplateRecord;
 
 pub fn run_template(record: &TemplateRecord, project_name: &str, cwd: &Path) -> Result<()> {
@@ -25,26 +26,33 @@ pub fn run_template(record: &TemplateRecord, project_name: &str, cwd: &Path) -> 
         .as_ref()
         .map(|r| r.commands.clone())
         .unwrap_or_default();
+    let allowed_programs = record
+        .manifest
+        .requires
+        .as_ref()
+        .map(|r| r.programs.clone())
+        .unwrap_or_default();
 
-    if !permissions.is_empty() {
+    if !permissions.is_empty() || !allowed_programs.is_empty() {
         let trust = TrustManager::new(PathLayout::discover(cwd.to_path_buf())?.trust_file);
         let trusted = trust
             .is_dir_trusted(&record.dir)
             .map_err(|e| anyhow!(e.to_string()))?;
         if !trusted {
-            eprintln!(
-                "Template '{}' requests elevated permissions: {:?}",
-                record.name, permissions
+            print_permission_summary(
+                &record.name,
+                &permissions,
+                &allowed_commands,
+                &allowed_programs,
             );
-            eprintln!(
-                "Grant and trust this template now? Trust is checksum-bound and will be invalidated on template changes."
-            );
-            if !confirm_stdin("Grant permissions and continue? (y/n): ")? {
-                bail!("aborted by user");
+            match confirm_trust_stdin("Trust this template? (y = trust, n = run once, q = quit): ")?
+            {
+                TrustChoice::Trust => trust
+                    .trust_dir(&record.dir)
+                    .map_err(|e| anyhow!(format!("failed to persist trust: {}", e)))?,
+                TrustChoice::RunOnce => {}
+                TrustChoice::Quit => bail!("aborted by user"),
             }
-            trust
-                .trust_dir(&record.dir)
-                .map_err(|e| anyhow!(format!("failed to persist trust: {}", e)))?;
         }
     }
 
@@ -62,6 +70,7 @@ pub fn run_template(record: &TemplateRecord, project_name: &str, cwd: &Path) -> 
         template_name: record.name.clone(),
         template_dir: record.dir.clone(),
         allowed_commands,
+        allowed_programs,
         permissions,
         logger: Some(std::sync::Arc::new(StdioLogger {})),
         prompts: Some(std::sync::Arc::new(StdioPrompts {})),
@@ -93,12 +102,67 @@ impl Logger for StdioLogger {
     }
 }
 
-fn confirm_stdin(prompt: &str) -> Result<bool> {
+fn print_permission_summary(
+    template_name: &str,
+    permissions: &[Permission],
+    allowed_commands: &[String],
+    allowed_programs: &[String],
+) {
+    eprintln!(
+        "Template \"{}\" is requesting elevated permissions:\n",
+        template_name
+    );
+
+    if permissions.contains(&Permission::Execution) {
+        if allowed_commands.is_empty() {
+            eprintln!("  • exec        — may execute external commands");
+        } else {
+            eprintln!(
+                "  • exec        — may execute external commands: {}",
+                allowed_commands.join(", ")
+            );
+        }
+    }
+    if permissions.contains(&Permission::EscapeCwd) {
+        eprintln!("  • escape_cwd  — may read and write paths outside the project directory (!!!)");
+    }
+    if permissions.contains(&Permission::Network) {
+        eprintln!("  • network     — may make network requests");
+    }
+    if permissions.contains(&Permission::ReadEnv) {
+        eprintln!(
+            "  • read_env    — may read environment variables beyond: HOME, USER, PATH, SHELL"
+        );
+    }
+    if !allowed_programs.is_empty() {
+        eprintln!(
+            "  • program     — use the following program APIs: {}",
+            allowed_programs.join(", ")
+        );
+    }
+}
+
+enum TrustChoice {
+    Trust,
+    RunOnce,
+    Quit,
+}
+
+fn confirm_trust_stdin(prompt: &str) -> Result<TrustChoice> {
     use std::io::Write;
-    print!("{}", prompt);
-    std::io::stdout().flush()?;
-    let mut line = String::new();
-    std::io::stdin().read_line(&mut line)?;
-    let ans = line.trim().to_ascii_lowercase();
-    Ok(ans == "y" || ans == "yes")
+    loop {
+        print!("{}", prompt);
+        std::io::stdout().flush()?;
+        let mut line = String::new();
+        std::io::stdin().read_line(&mut line)?;
+        let ans = line.trim().to_ascii_lowercase();
+        match ans.as_str() {
+            "y" | "yes" => return Ok(TrustChoice::Trust),
+            "n" | "no" => return Ok(TrustChoice::RunOnce),
+            "q" | "quit" => return Ok(TrustChoice::Quit),
+            _ => {
+                eprintln!("please respond with y, n, or q");
+            }
+        }
+    }
 }
