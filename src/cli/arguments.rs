@@ -1,0 +1,267 @@
+use clap::{Parser, Subcommand};
+
+#[derive(Parser)]
+#[command(name = "forge")]
+#[command(about = "A Lua-powered template engine.")]
+#[command(long_about = "Forge scaffolds new projects from Lua templates.\n\n\
+    Templates live in .forge/templates/ (local) or ~/.forge/templates/ (global).\n\n\
+    EXAMPLES:\n  \
+    forge new webapp my-app\n  \
+    forge list\n  \
+    forge info webapp\n  \
+    forge create my-template\n  \
+    forge validate webapp")]
+#[command(
+    version,
+    long_version = concat!(env!("CARGO_PKG_VERSION"), " (", env!("GIT_HASH"), ")")
+)]
+pub struct Cli {
+    #[command(subcommand)]
+    pub command: Commands,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum Commands {
+    /// Scaffold a new project from a template
+    #[command(long_about = "Scaffold a new project from a template.\n\n\
+        Locates the template, validates its manifest, checks required commands,\n\
+        prompts for any elevated permissions, then executes main.lua.\n\n\
+        EXAMPLES:\n  \
+        forge new webapp my-app\n  \
+        forge new fullstack my-project")]
+    New {
+        /// Name of the template to use
+        template: String,
+        /// Name of the project to create
+        name: String,
+    },
+
+    /// List available templates
+    #[command(long_about = "List all available templates.\n\n\
+        Searches both .forge/templates/ (local) and ~/.forge/templates/ (global).\n\
+        Local templates are listed first and take precedence over global ones.\n\n\
+        EXAMPLES:\n  \
+        forge list\n  \
+        forge list --local\n  \
+        forge list --global")]
+    List {
+        /// Show only global templates
+        #[arg(long, conflicts_with = "local")]
+        global: bool,
+        /// Show only local templates
+        #[arg(long, conflicts_with = "global")]
+        local: bool,
+    },
+
+    /// Print details about a template
+    #[command(long_about = "Print details about a template.\n\n\
+        Reads and displays the template's manifest.toml in a human-readable format,\n\
+        including version, description, author, tags, and required permissions.\n\n\
+        EXAMPLES:\n  \
+        forge info webapp\n  \
+        forge info fullstack")]
+    Info {
+        /// Name of the template to inspect
+        template: String,
+    },
+
+    /// Scaffold a new blank template
+    #[command(long_about = "Scaffold a new blank template.\n\n\
+        Generates a minimal template in .forge/templates/<name>/ (or globally with --global)\n\
+        with a pre-populated manifest.toml and a commented main.lua to get started.\n\n\
+        EXAMPLES:\n  \
+        forge create my-template\n  \
+        forge create my-template --global")]
+    Create {
+        /// Name of the template to create
+        name: String,
+        /// Create in ~/.forge/templates/ instead of .forge/templates/
+        #[arg(long)]
+        global: bool,
+    },
+
+    /// Validate a template without executing it
+    #[command(long_about = "Validate a template without executing it.\n\n\
+        Checks that manifest.toml is present and valid, main.lua parses without\n\
+        syntax errors, all files referenced by render calls exist, and all\n\
+        declared permissions are known values.\n\n\
+        EXAMPLES:\n  \
+        forge validate webapp\n  \
+        forge validate my-template --global")]
+    Validate {
+        /// Name of the template to validate
+        template: String,
+        /// Validate a template in ~/.forge/templates/
+        #[arg(long)]
+        global: bool,
+    },
+
+    /// Manage template trust
+    #[command(long_about = "Manage which templates are trusted.\n\n\
+        Trusted templates skip the permission confirmation prompt. Trust is tied\n\
+        to a checksum of the entire template directory — if any file changes,\n\
+        the trust entry is invalidated and the prompt reappears.\n\n\
+        EXAMPLES:\n  \
+        forge trust add webapp\n  \
+        forge trust remove webapp\n  \
+        forge trust list")]
+    Trust {
+        #[command(subcommand)]
+        action: TrustAction,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+pub enum TrustAction {
+    /// Trust a template and store its checksum
+    #[command(long_about = "Mark a template as trusted.\n\n\
+        Computes a checksum of the entire template directory and stores it in\n\
+        ~/.forge/trust.json. Trusted templates skip the permission prompt.\n\
+        If the template changes, the trust entry is invalidated automatically.\n\n\
+        EXAMPLES:\n  \
+        forge trust add webapp\n  \
+        forge trust add fullstack --global")]
+    Add {
+        /// Name of the template to trust
+        template: String,
+        /// Trust a template in ~/.forge/templates/
+        #[arg(long)]
+        global: bool,
+    },
+
+    /// Revoke trust from a template
+    #[command(long_about = "Remove a template's trust entry.\n\n\
+        The template can still be run, but permission prompts will reappear.\n\n\
+        EXAMPLES:\n  \
+        forge trust remove webapp")]
+    Remove {
+        /// Name of the template to untrust
+        template: String,
+    },
+
+    /// List all trusted templates
+    #[command(
+        long_about = "Show all trusted templates and their stored checksums.\n\n\
+        Templates whose checksum no longer matches their current state are shown\n\
+        as invalidated.\n\n\
+        EXAMPLES:\n  \
+        forge trust list"
+    )]
+    List,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use clap::Parser;
+
+    #[test]
+    fn new_parses_template_and_name() {
+        let cli = Cli::parse_from(["forge", "new", "webapp", "my-app"]);
+        match cli.command {
+            Commands::New { template, name } => {
+                assert_eq!(template, "webapp");
+                assert_eq!(name, "my-app");
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn list_parses_global_flag() {
+        let cli = Cli::parse_from(["forge", "list", "--global"]);
+        match cli.command {
+            Commands::List { global, local } => {
+                assert!(global);
+                assert!(!local);
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn list_parses_local_flag() {
+        let cli = Cli::parse_from(["forge", "list", "--local"]);
+        match cli.command {
+            Commands::List { global, local } => {
+                assert!(!global);
+                assert!(local);
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn list_rejects_global_and_local_together() {
+        assert!(Cli::try_parse_from(["forge", "list", "--global", "--local"]).is_err());
+    }
+
+    #[test]
+    fn info_parses_template_name() {
+        let cli = Cli::parse_from(["forge", "info", "fullstack"]);
+        match cli.command {
+            Commands::Info { template } => assert_eq!(template, "fullstack"),
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn create_parses_name_and_global_flag() {
+        let cli = Cli::parse_from(["forge", "create", "my-template", "--global"]);
+        match cli.command {
+            Commands::Create { name, global } => {
+                assert_eq!(name, "my-template");
+                assert!(global);
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn validate_parses_template_and_global_flag() {
+        let cli = Cli::parse_from(["forge", "validate", "webapp", "--global"]);
+        match cli.command {
+            Commands::Validate { template, global } => {
+                assert_eq!(template, "webapp");
+                assert!(global);
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn trust_add_parses_template_and_global_flag() {
+        let cli = Cli::parse_from(["forge", "trust", "add", "webapp", "--global"]);
+        match cli.command {
+            Commands::Trust {
+                action: TrustAction::Add { template, global },
+            } => {
+                assert_eq!(template, "webapp");
+                assert!(global);
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn trust_remove_parses_template() {
+        let cli = Cli::parse_from(["forge", "trust", "remove", "webapp"]);
+        match cli.command {
+            Commands::Trust {
+                action: TrustAction::Remove { template },
+            } => assert_eq!(template, "webapp"),
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn trust_list_parses() {
+        let cli = Cli::parse_from(["forge", "trust", "list"]);
+        assert!(matches!(
+            cli.command,
+            Commands::Trust {
+                action: TrustAction::List
+            }
+        ));
+    }
+}
