@@ -1,6 +1,7 @@
 use crate::lua::errors::{ErrorKind, LuaError};
 use crate::lua::exec::register_exec;
 use crate::lua::fs::register_fs;
+use crate::lua::prog::register_prog;
 use crate::lua::render::register_render;
 use crate::lua::runtime::{Runtime, RuntimeState};
 use crate::lua::types::{PromptConfirmOptions, PromptInputOptions, PromptSelectOptions};
@@ -23,6 +24,7 @@ pub(crate) fn register_api(lua: &Lua, state: Rc<RefCell<RuntimeState>>) -> Resul
     register_render(lua, &forge, state.clone())?;
     register_fs(lua, &forge, state.clone())?;
     register_exec(lua, &forge, state.clone())?;
+    register_prog(lua, &forge, state.clone())?;
     Ok(())
 }
 
