@@ -37,3 +37,9 @@ gen-completions:
         cargo run --bin completions --features="shell-completions" -- "$shell" \
             > "./completions/completions.$ext"
     done
+
+gen-site:
+    #!/usr/bin/env bash
+    cd docs/web/
+    npm install
+    npm run build
