@@ -1,1 +1,4 @@
 target/
+
+docs/web/node_modules/
+docs/web/site/
