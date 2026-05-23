@@ -11,6 +11,12 @@ pub enum TemplateSource {
     Global,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResolveScope {
+    Local,
+    Global,
+}
+
 #[derive(Debug, Clone)]
 pub struct TemplateRecord {
     pub name: String,
@@ -30,11 +36,7 @@ impl TemplateResolver {
 
     pub fn resolve(&self, name: &str, force_global: bool) -> Result<TemplateRecord> {
         if force_global {
-            return self.resolve_from_dir(
-                name,
-                &self.layout.global_templates,
-                TemplateSource::Global,
-            );
+            return self.resolve_scoped(name, ResolveScope::Global);
         }
 
         let local_dir = self.layout.local_templates.join(name);
@@ -49,6 +51,17 @@ impl TemplateResolver {
         }
 
         self.resolve_from_dir(name, &self.layout.global_templates, TemplateSource::Global)
+    }
+
+    pub fn resolve_scoped(&self, name: &str, scope: ResolveScope) -> Result<TemplateRecord> {
+        match scope {
+            ResolveScope::Local => {
+                self.resolve_from_dir(name, &self.layout.local_templates, TemplateSource::Local)
+            }
+            ResolveScope::Global => {
+                self.resolve_from_dir(name, &self.layout.global_templates, TemplateSource::Global)
+            }
+        }
     }
 
     fn resolve_from_dir(

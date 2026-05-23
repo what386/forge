@@ -34,6 +34,12 @@ pub enum Commands {
         template: String,
         /// Name of the project to create
         name: String,
+        /// Use local .forge/templates
+        #[arg(short = 'l', long, conflicts_with = "global")]
+        local: bool,
+        /// Use global ~/.forge/templates
+        #[arg(short = 'g', long, conflicts_with = "local")]
+        global: bool,
         /// Use default values for all prompts
         #[arg(long)]
         default: bool,
@@ -66,6 +72,12 @@ pub enum Commands {
     Info {
         /// Name of the template to inspect
         template: String,
+        /// Use local .forge/templates
+        #[arg(short = 'l', long, conflicts_with = "global")]
+        local: bool,
+        /// Use global ~/.forge/templates
+        #[arg(short = 'g', long, conflicts_with = "local")]
+        global: bool,
     },
 
     /// Scaffold a new blank template
@@ -78,8 +90,11 @@ pub enum Commands {
     Create {
         /// Name of the template to create
         name: String,
-        /// Create in ~/.forge/templates/ instead of .forge/templates/
-        #[arg(short = 'g', long)]
+        /// Create in local .forge/templates/
+        #[arg(short = 'l', long, conflicts_with = "global")]
+        local: bool,
+        /// Create in ~/.forge/templates/
+        #[arg(short = 'g', long, conflicts_with = "local")]
         global: bool,
     },
 
@@ -91,9 +106,15 @@ pub enum Commands {
         forge remove webapp\n  \
         forge remove webapp fullstack")]
     Remove {
-        /// Local template name(s) to remove
+        /// Template name(s) to remove
         #[arg(required = true)]
         names: Vec<String>,
+        /// Remove from local .forge/templates/
+        #[arg(short = 'l', long, conflicts_with = "global")]
+        local: bool,
+        /// Remove from global ~/.forge/templates/
+        #[arg(short = 'g', long, conflicts_with = "local")]
+        global: bool,
     },
 
     /// Check a template without executing it
@@ -107,8 +128,11 @@ pub enum Commands {
     Check {
         /// Name of the template to check
         template: String,
+        /// Check a template in local .forge/templates/
+        #[arg(short = 'l', long, conflicts_with = "global")]
+        local: bool,
         /// Check a template in ~/.forge/templates/
-        #[arg(short = 'g', long)]
+        #[arg(short = 'g', long, conflicts_with = "local")]
         global: bool,
     },
 
@@ -168,8 +192,11 @@ pub enum TrustAction {
     Add {
         /// Name of the template to trust
         template: String,
+        /// Trust a template in local .forge/templates/
+        #[arg(short = 'l', long, conflicts_with = "global")]
+        local: bool,
         /// Trust a template in ~/.forge/templates/
-        #[arg(short = 'g', long)]
+        #[arg(short = 'g', long, conflicts_with = "local")]
         global: bool,
     },
 
@@ -181,6 +208,12 @@ pub enum TrustAction {
     Remove {
         /// Name of the template to untrust
         template: String,
+        /// Remove trust for a template in local .forge/templates/
+        #[arg(short = 'l', long, conflicts_with = "global")]
+        local: bool,
+        /// Remove trust for a template in ~/.forge/templates/
+        #[arg(short = 'g', long, conflicts_with = "local")]
+        global: bool,
     },
 
     /// List all trusted templates
@@ -257,10 +290,14 @@ mod tests {
             Commands::New {
                 template,
                 name,
+                local,
+                global,
                 default,
             } => {
                 assert_eq!(template, "webapp");
                 assert_eq!(name, "my-app");
+                assert!(!local);
+                assert!(!global);
                 assert!(!default);
             }
             other => panic!("unexpected command: {:?}", other),
@@ -274,10 +311,14 @@ mod tests {
             Commands::New {
                 template,
                 name,
+                local,
+                global,
                 default,
             } => {
                 assert_eq!(template, "webapp");
                 assert_eq!(name, "my-app");
+                assert!(!local);
+                assert!(!global);
                 assert!(default);
             }
             other => panic!("unexpected command: {:?}", other),
@@ -346,7 +387,15 @@ mod tests {
     fn info_parses_template_name() {
         let cli = Cli::parse_from(["forge", "info", "fullstack"]);
         match cli.command {
-            Commands::Info { template } => assert_eq!(template, "fullstack"),
+            Commands::Info {
+                template,
+                local,
+                global,
+            } => {
+                assert_eq!(template, "fullstack");
+                assert!(!local);
+                assert!(!global);
+            }
             other => panic!("unexpected command: {:?}", other),
         }
     }
@@ -355,8 +404,13 @@ mod tests {
     fn create_parses_name_and_global_flag() {
         let cli = Cli::parse_from(["forge", "create", "my-template", "--global"]);
         match cli.command {
-            Commands::Create { name, global } => {
+            Commands::Create {
+                name,
+                local,
+                global,
+            } => {
                 assert_eq!(name, "my-template");
+                assert!(!local);
                 assert!(global);
             }
             other => panic!("unexpected command: {:?}", other),
@@ -367,8 +421,13 @@ mod tests {
     fn create_parses_name_and_global_short_flag() {
         let cli = Cli::parse_from(["forge", "create", "my-template", "-g"]);
         match cli.command {
-            Commands::Create { name, global } => {
+            Commands::Create {
+                name,
+                local,
+                global,
+            } => {
                 assert_eq!(name, "my-template");
+                assert!(!local);
                 assert!(global);
             }
             other => panic!("unexpected command: {:?}", other),
@@ -379,8 +438,13 @@ mod tests {
     fn check_parses_template_and_global_flag() {
         let cli = Cli::parse_from(["forge", "check", "webapp", "--global"]);
         match cli.command {
-            Commands::Check { template, global } => {
+            Commands::Check {
+                template,
+                local,
+                global,
+            } => {
                 assert_eq!(template, "webapp");
+                assert!(!local);
                 assert!(global);
             }
             other => panic!("unexpected command: {:?}", other),
@@ -392,14 +456,24 @@ mod tests {
         let one = Cli::parse_from(["forge", "remove", "webapp"]);
         assert!(matches!(
             one.command,
-            Commands::Remove { names } if names == vec!["webapp".to_string()]
+            Commands::Remove {
+                names,
+                local,
+                global,
+            } if names == vec!["webapp".to_string()] && !local && !global
         ));
 
         let many = Cli::parse_from(["forge", "remove", "webapp", "fullstack"]);
         assert!(matches!(
             many.command,
-            Commands::Remove { names }
+            Commands::Remove {
+                names,
+                local,
+                global,
+            }
                 if names == vec!["webapp".to_string(), "fullstack".to_string()]
+                && !local
+                && !global
         ));
     }
 
@@ -407,8 +481,13 @@ mod tests {
     fn check_parses_template_and_global_short_flag() {
         let cli = Cli::parse_from(["forge", "check", "webapp", "-g"]);
         match cli.command {
-            Commands::Check { template, global } => {
+            Commands::Check {
+                template,
+                local,
+                global,
+            } => {
                 assert_eq!(template, "webapp");
+                assert!(!local);
                 assert!(global);
             }
             other => panic!("unexpected command: {:?}", other),
@@ -420,9 +499,15 @@ mod tests {
         let cli = Cli::parse_from(["forge", "trust", "add", "webapp", "--global"]);
         match cli.command {
             Commands::Trust {
-                action: TrustAction::Add { template, global },
+                action:
+                    TrustAction::Add {
+                        template,
+                        local,
+                        global,
+                    },
             } => {
                 assert_eq!(template, "webapp");
+                assert!(!local);
                 assert!(global);
             }
             other => panic!("unexpected command: {:?}", other),
@@ -434,9 +519,15 @@ mod tests {
         let cli = Cli::parse_from(["forge", "trust", "add", "webapp", "-g"]);
         match cli.command {
             Commands::Trust {
-                action: TrustAction::Add { template, global },
+                action:
+                    TrustAction::Add {
+                        template,
+                        local,
+                        global,
+                    },
             } => {
                 assert_eq!(template, "webapp");
+                assert!(!local);
                 assert!(global);
             }
             other => panic!("unexpected command: {:?}", other),
@@ -448,8 +539,17 @@ mod tests {
         let cli = Cli::parse_from(["forge", "trust", "remove", "webapp"]);
         match cli.command {
             Commands::Trust {
-                action: TrustAction::Remove { template },
-            } => assert_eq!(template, "webapp"),
+                action:
+                    TrustAction::Remove {
+                        template,
+                        local,
+                        global,
+                    },
+            } => {
+                assert_eq!(template, "webapp");
+                assert!(!local);
+                assert!(!global);
+            }
             other => panic!("unexpected command: {:?}", other),
         }
     }

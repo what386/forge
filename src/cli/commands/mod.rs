@@ -5,5 +5,6 @@ pub mod list;
 pub mod new;
 pub mod package;
 pub mod remove;
+pub mod scope;
 pub mod trust;
 pub mod validate;

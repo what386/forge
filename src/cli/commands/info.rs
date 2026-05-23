@@ -1,13 +1,15 @@
 use anyhow::Result;
 
+use crate::cli::commands::scope;
 use crate::services::paths::PathLayout;
 use crate::templates::{TemplateResolver, TemplateSource};
 
-pub fn run(template: String) -> Result<()> {
+pub fn run(template: String, local: bool, global: bool) -> Result<()> {
     let cwd = std::env::current_dir()?;
     let layout = PathLayout::discover(cwd)?;
+    let source = scope::resolve(&layout, local, global)?;
     let resolver = TemplateResolver::new(layout);
-    let rec = resolver.resolve(&template, false)?;
+    let rec = resolver.resolve_scoped(&template, source)?;
 
     println!(
         "{} {}",

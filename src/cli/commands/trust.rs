@@ -1,14 +1,16 @@
 use anyhow::Result;
 
+use crate::cli::commands::scope;
 use crate::services::paths::PathLayout;
 use crate::services::storage::trust::TrustManager;
 use crate::templates::TemplateResolver;
 
-pub fn run_add(template: String, global: bool) -> Result<()> {
+pub fn run_add(template: String, local: bool, global: bool) -> Result<()> {
     let cwd = std::env::current_dir()?;
     let layout = PathLayout::discover(cwd)?;
+    let source = scope::resolve(&layout, local, global)?;
     let resolver = TemplateResolver::new(layout.clone());
-    let rec = resolver.resolve(&template, global)?;
+    let rec = resolver.resolve_scoped(&template, source)?;
 
     let tm = TrustManager::new(layout.trust_file);
     tm.trust_dir(&rec.dir)
@@ -17,11 +19,12 @@ pub fn run_add(template: String, global: bool) -> Result<()> {
     Ok(())
 }
 
-pub fn run_remove(template: String) -> Result<()> {
+pub fn run_remove(template: String, local: bool, global: bool) -> Result<()> {
     let cwd = std::env::current_dir()?;
     let layout = PathLayout::discover(cwd)?;
+    let source = scope::resolve(&layout, local, global)?;
     let resolver = TemplateResolver::new(layout.clone());
-    let rec = resolver.resolve(&template, false)?;
+    let rec = resolver.resolve_scoped(&template, source)?;
 
     let tm = TrustManager::new(layout.trust_file);
     let removed = tm

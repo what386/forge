@@ -1,17 +1,19 @@
 use anyhow::{bail, Context, Result};
 use std::fs;
 
+use crate::cli::commands::scope;
 use crate::services::paths::PathLayout;
 use crate::services::storage::config::{ConfigStorage, UserConfig};
 use crate::services::storage::index::TemplateIndexStorage;
+use crate::templates::ResolveScope;
 
-pub fn run(name: String, global: bool) -> Result<()> {
+pub fn run(name: String, local: bool, global: bool) -> Result<()> {
     let cwd = std::env::current_dir()?;
     let layout = PathLayout::discover(cwd)?;
-    let (root, forge_root) = if global {
-        (layout.global_templates, layout.global_root)
-    } else {
-        (layout.local_templates, layout.local_root)
+    let scope = scope::resolve(&layout, local, global)?;
+    let (root, forge_root) = match scope {
+        ResolveScope::Local => (layout.local_templates, layout.local_root),
+        ResolveScope::Global => (layout.global_templates, layout.global_root),
     };
     let dir = root.join(&name);
     if dir.exists() {

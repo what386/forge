@@ -9,16 +9,42 @@ impl Cli {
             Commands::New {
                 template,
                 name,
+                local,
+                global,
                 default,
-            } => commands::new::run(template, name, default),
+            } => commands::new::run(template, name, local, global, default),
             Commands::List { global, local } => commands::list::run(global, local),
-            Commands::Info { template } => commands::info::run(template),
-            Commands::Create { name, global } => commands::create::run(name, global),
-            Commands::Remove { names } => commands::remove::run(names),
-            Commands::Check { template, global } => commands::validate::run(template, global),
+            Commands::Info {
+                template,
+                local,
+                global,
+            } => commands::info::run(template, local, global),
+            Commands::Create {
+                name,
+                local,
+                global,
+            } => commands::create::run(name, local, global),
+            Commands::Remove {
+                names,
+                local,
+                global,
+            } => commands::remove::run(names, local, global),
+            Commands::Check {
+                template,
+                local,
+                global,
+            } => commands::validate::run(template, local, global),
             Commands::Trust { action } => match action {
-                TrustAction::Add { template, global } => commands::trust::run_add(template, global),
-                TrustAction::Remove { template } => commands::trust::run_remove(template),
+                TrustAction::Add {
+                    template,
+                    local,
+                    global,
+                } => commands::trust::run_add(template, local, global),
+                TrustAction::Remove {
+                    template,
+                    local,
+                    global,
+                } => commands::trust::run_remove(template, local, global),
                 TrustAction::List => commands::trust::run_list(),
             },
             Commands::Config { action } => match action {
