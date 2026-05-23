@@ -282,7 +282,7 @@ mod tests {
             .map(|d| d.as_nanos())
             .unwrap_or(0);
         std::env::temp_dir()
-            .join(format!("upstream-config-test-{name}-{nanos}"))
+            .join(format!("forge-config-test-{name}-{nanos}"))
             .join("config.toml")
     }
 
