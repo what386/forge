@@ -1,5 +1,6 @@
 use crate::lua::errors::LuaError;
-use std::path::PathBuf;
+use crate::templates::manifest::Permission;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 pub trait Logger: Send + Sync {
@@ -54,7 +55,9 @@ pub trait ExecRunner: Send + Sync {
         &self,
         argv: &[String],
         opts: &ExecOptions,
-        project_dir: &PathBuf,
+        cwd: &Path,
+        env_allowlist: &[String],
+        inherit_env: bool,
     ) -> Result<ExecResult, LuaError>;
 }
 
@@ -65,7 +68,28 @@ pub struct RuntimeConfig {
     pub template_name: String,
     pub template_dir: PathBuf,
     pub env_allowlist: Vec<String>,
+    pub allowed_commands: Vec<String>,
+    pub permissions: Vec<Permission>,
     pub logger: Option<Arc<dyn Logger>>,
     pub prompts: Option<Arc<dyn PromptProvider>>,
     pub exec: Option<Arc<dyn ExecRunner>>,
+}
+
+impl RuntimeConfig {
+    pub fn has_permission(&self, permission: Permission) -> bool {
+        self.permissions.contains(&permission)
+    }
+
+    pub fn effective_env_allowlist(&self) -> Vec<String> {
+        if self.env_allowlist.is_empty() {
+            vec![
+                "HOME".to_string(),
+                "USER".to_string(),
+                "PATH".to_string(),
+                "SHELL".to_string(),
+            ]
+        } else {
+            self.env_allowlist.clone()
+        }
+    }
 }

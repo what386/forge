@@ -1,7 +1,8 @@
 use crate::lua::api::lua_err;
 use crate::lua::errors::{ErrorKind, LuaError};
-use crate::lua::fs::safe_project_path;
+use crate::lua::fs::{safe_project_path_with_escape, safe_template_path};
 use crate::lua::runtime::{Runtime, RuntimeState};
+use crate::templates::manifest::Permission;
 use mlua::{Function, Lua, Table, Value};
 use once_cell::sync::Lazy;
 use regex::Regex;
@@ -81,8 +82,12 @@ fn render_file(
     scope: Table,
 ) -> Result<(), LuaError> {
     let cfg = state.borrow().cfg.clone();
-    let src_abs = cfg.template_dir.join("files").join(src_rel);
-    let dst_abs = safe_project_path(&cfg.project_dir, dst_rel)?;
+    let src_abs = safe_template_path(&cfg.template_dir.join("files"), src_rel)?;
+    let dst_abs = safe_project_path_with_escape(
+        &cfg.project_dir,
+        dst_rel,
+        cfg.has_permission(Permission::EscapeCwd),
+    )?;
     let mut out = fs::read_to_string(&src_abs)
         .map_err(|e| LuaError::new(ErrorKind::Render, e.to_string()))?;
     if src_rel.ends_with(".tpl") {
@@ -102,7 +107,7 @@ fn render_dir(
     scope: Table,
 ) -> Result<(), LuaError> {
     let cfg = state.borrow().cfg.clone();
-    let src_root = cfg.template_dir.join("files").join(src_dir_rel);
+    let src_root = safe_template_path(&cfg.template_dir.join("files"), src_dir_rel)?;
     if !src_root.is_dir() {
         return Err(LuaError::new(
             ErrorKind::Render,
@@ -126,7 +131,11 @@ fn render_dir(
             continue;
         }
 
-        let dst_abs = safe_project_path(&cfg.project_dir, &dst_rel)?;
+        let dst_abs = safe_project_path_with_escape(
+            &cfg.project_dir,
+            &dst_rel,
+            cfg.has_permission(Permission::EscapeCwd),
+        )?;
         if let Some(parent) = dst_abs.parent() {
             fs::create_dir_all(parent)
                 .map_err(|e| LuaError::new(ErrorKind::Render, e.to_string()))?;

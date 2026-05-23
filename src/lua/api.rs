@@ -4,6 +4,7 @@ use crate::lua::fs::register_fs;
 use crate::lua::render::register_render;
 use crate::lua::runtime::{Runtime, RuntimeState};
 use crate::lua::types::{PromptConfirmOptions, PromptInputOptions, PromptSelectOptions};
+use crate::templates::manifest::Permission;
 use mlua::{Function, Lua, Table, Value};
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -454,15 +455,10 @@ fn register_env(
     state: Rc<RefCell<RuntimeState>>,
 ) -> Result<(), LuaError> {
     let env_t = lua.create_table().map_err(lua_err)?;
-    let keys = if state.borrow().cfg.env_allowlist.is_empty() {
-        vec![
-            "HOME".to_string(),
-            "USER".to_string(),
-            "PATH".to_string(),
-            "SHELL".to_string(),
-        ]
+    let keys = if state.borrow().cfg.has_permission(Permission::ReadEnv) {
+        std::env::vars().map(|(key, _)| key).collect()
     } else {
-        state.borrow().cfg.env_allowlist.clone()
+        state.borrow().cfg.effective_env_allowlist()
     };
     for k in keys {
         env_t

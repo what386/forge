@@ -1,11 +1,13 @@
 use crate::lua::api::lua_err;
 use crate::lua::errors::{ErrorKind, LuaError};
-use crate::lua::fs::safe_project_path;
+use crate::lua::fs::safe_project_path_with_escape;
 use crate::lua::runtime::{Runtime, RuntimeState};
 use crate::lua::types::{ExecOptions, ExecResult, ExecRunner};
+use crate::templates::manifest::Permission;
 use mlua::{Lua, Table};
 use std::cell::RefCell;
 use std::io::BufRead;
+use std::path::Path;
 use std::process::{Command, Stdio};
 use std::rc::Rc;
 use std::sync::Arc;
@@ -30,24 +32,41 @@ pub(crate) fn register_exec(
                         "empty command",
                     )));
                 }
+                let cfg = st.borrow().cfg.clone();
+                if !command_declared(&argv[0], &cfg.allowed_commands) {
+                    return Err(mlua::Error::external(LuaError::new(
+                        ErrorKind::Exec,
+                        format!("command not declared in [requires].commands: {}", argv[0]),
+                    )));
+                }
                 let mut opts = ExecOptions::default();
                 if let Some(t) = opts_t {
                     opts.cwd = t.get::<Option<String>>("cwd")?.unwrap_or_default();
                     opts.allow_fail = t.get::<Option<bool>>("allow_fail")?.unwrap_or(false);
                     opts.passthrough = t.get::<Option<bool>>("passthrough")?.unwrap_or(false);
                 }
-                if !opts.cwd.is_empty() {
-                    safe_project_path(&st.borrow().cfg.project_dir, &opts.cwd)
-                        .map_err(mlua::Error::external)?;
-                }
+                let cwd = if opts.cwd.is_empty() {
+                    cfg.project_dir.canonicalize().map_err(|e| {
+                        mlua::Error::external(LuaError::new(ErrorKind::Exec, e.to_string()))
+                    })?
+                } else {
+                    safe_project_path_with_escape(
+                        &cfg.project_dir,
+                        &opts.cwd,
+                        cfg.has_permission(Permission::EscapeCwd),
+                    )
+                    .map_err(mlua::Error::external)?
+                };
                 let runner: Arc<dyn ExecRunner> = st
                     .borrow()
                     .cfg
                     .exec
                     .clone()
                     .unwrap_or_else(|| Arc::new(DefaultExecRunner {}));
+                let inherit_env = cfg.has_permission(Permission::ReadEnv);
+                let env_allowlist = cfg.effective_env_allowlist();
                 let res = runner
-                    .run(&argv, &opts, &st.borrow().cfg.project_dir)
+                    .run(&argv, &opts, &cwd, &env_allowlist, inherit_env)
                     .map_err(mlua::Error::external)?;
                 if !res.ok && !opts.allow_fail {
                     return Err(mlua::Error::external(Runtime::abort(
@@ -74,16 +93,22 @@ impl ExecRunner for DefaultExecRunner {
         &self,
         argv: &[String],
         opts: &ExecOptions,
-        project_dir: &std::path::PathBuf,
+        cwd: &Path,
+        env_allowlist: &[String],
+        inherit_env: bool,
     ) -> Result<ExecResult, LuaError> {
         let mut cmd = Command::new(&argv[0]);
         if argv.len() > 1 {
             cmd.args(&argv[1..]);
         }
-        if opts.cwd.is_empty() {
-            cmd.current_dir(project_dir);
-        } else {
-            cmd.current_dir(project_dir.join(&opts.cwd));
+        cmd.current_dir(cwd);
+        if !inherit_env {
+            cmd.env_clear();
+            for key in env_allowlist {
+                if let Ok(value) = std::env::var(key) {
+                    cmd.env(key, value);
+                }
+            }
         }
         if opts.passthrough {
             let status = cmd
@@ -131,4 +156,13 @@ impl ExecRunner for DefaultExecRunner {
             stderr,
         })
     }
+}
+
+fn command_declared(argv0: &str, allowed_commands: &[String]) -> bool {
+    let Some(file_name) = Path::new(argv0).file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    allowed_commands
+        .iter()
+        .any(|cmd| cmd == argv0 || cmd == file_name)
 }
