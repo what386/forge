@@ -157,7 +157,7 @@ Stdlib helpers exposed on `forge`:
 
 For detailed API and manifest docs:
 
-- `docs/lua_api.md`
+- `docs/lua/index.md`
 - `docs/manifests.md`
 
 ---
