@@ -34,6 +34,9 @@ pub enum Commands {
         template: String,
         /// Name of the project to create
         name: String,
+        /// Use default values for all prompts
+        #[arg(long)]
+        default: bool,
     },
 
     /// List available templates
@@ -194,9 +197,31 @@ mod tests {
     fn new_parses_template_and_name() {
         let cli = Cli::parse_from(["forge", "new", "webapp", "my-app"]);
         match cli.command {
-            Commands::New { template, name } => {
+            Commands::New {
+                template,
+                name,
+                default,
+            } => {
                 assert_eq!(template, "webapp");
                 assert_eq!(name, "my-app");
+                assert!(!default);
+            }
+            other => panic!("unexpected command: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn new_parses_default_flag() {
+        let cli = Cli::parse_from(["forge", "new", "webapp", "my-app", "--default"]);
+        match cli.command {
+            Commands::New {
+                template,
+                name,
+                default,
+            } => {
+                assert_eq!(template, "webapp");
+                assert_eq!(name, "my-app");
+                assert!(default);
             }
             other => panic!("unexpected command: {:?}", other),
         }

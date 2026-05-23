@@ -6,7 +6,11 @@ use crate::cli::commands;
 impl Cli {
     pub fn run(self) -> Result<()> {
         match self.command {
-            Commands::New { template, name } => commands::new::run(template, name),
+            Commands::New {
+                template,
+                name,
+                default,
+            } => commands::new::run(template, name, default),
             Commands::List { global, local } => commands::list::run(global, local),
             Commands::Info { template } => commands::info::run(template),
             Commands::Create { name, global } => commands::create::run(name, global),

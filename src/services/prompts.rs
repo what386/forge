@@ -2,6 +2,7 @@ use crate::lua::{PromptConfirmOptions, PromptInputOptions, PromptProvider, Promp
 use std::io::{self, Write};
 
 pub struct StdioPrompts;
+pub struct DefaultPrompts;
 
 impl PromptProvider for StdioPrompts {
     fn input(
@@ -76,6 +77,37 @@ impl PromptProvider for StdioPrompts {
         Err(crate::lua::LuaError::new(
             crate::lua::ErrorKind::Abort,
             "invalid selection",
+        ))
+    }
+}
+
+impl PromptProvider for DefaultPrompts {
+    fn input(
+        &self,
+        _message: &str,
+        opts: PromptInputOptions,
+    ) -> Result<String, crate::lua::LuaError> {
+        Ok(opts.default)
+    }
+
+    fn confirm(
+        &self,
+        _message: &str,
+        opts: PromptConfirmOptions,
+    ) -> Result<bool, crate::lua::LuaError> {
+        Ok(opts.default)
+    }
+
+    fn select(&self, opts: PromptSelectOptions) -> Result<String, crate::lua::LuaError> {
+        if !opts.default.is_empty() {
+            return Ok(opts.default);
+        }
+        if let Some(first) = opts.options.first() {
+            return Ok(first.clone());
+        }
+        Err(crate::lua::LuaError::new(
+            crate::lua::ErrorKind::Abort,
+            "select prompt has no default and no options",
         ))
     }
 }

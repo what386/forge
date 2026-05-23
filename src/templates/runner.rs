@@ -2,13 +2,18 @@ use anyhow::{anyhow, bail, Result};
 use std::path::Path;
 
 use crate::lua::{Logger, Runtime, RuntimeConfig};
-use crate::services::prompts::StdioPrompts;
+use crate::services::prompts::{DefaultPrompts, StdioPrompts};
 use crate::storage::paths::PathLayout;
 use crate::storage::trust::TrustManager;
 use crate::templates::manifest::Permission;
 use crate::templates::resolver::TemplateRecord;
 
-pub fn run_template(record: &TemplateRecord, project_name: &str, cwd: &Path) -> Result<()> {
+pub fn run_template(
+    record: &TemplateRecord,
+    project_name: &str,
+    cwd: &Path,
+    use_defaults: bool,
+) -> Result<()> {
     let project_dir = cwd.join(project_name);
     if project_dir.exists() {
         bail!("output directory already exists: {}", project_dir.display());
@@ -45,12 +50,20 @@ pub fn run_template(record: &TemplateRecord, project_name: &str, cwd: &Path) -> 
                 &allowed_commands,
                 &allowed_programs,
             );
-            match confirm_trust_stdin("Trust this template? (y = trust, n = run once, q = quit): ")?
-            {
+            let choice = if use_defaults {
+                TrustChoice::RunOnce
+            } else {
+                confirm_trust_stdin("Trust this template? (y = trust, n = run once, q = quit): ")?
+            };
+            match choice {
                 TrustChoice::Trust => trust
                     .trust_dir(&record.dir)
                     .map_err(|e| anyhow!(format!("failed to persist trust: {}", e)))?,
-                TrustChoice::RunOnce => {}
+                TrustChoice::RunOnce => {
+                    if use_defaults {
+                        eprintln!("using --default: continuing with run-once (not trusted)");
+                    }
+                }
                 TrustChoice::Quit => bail!("aborted by user"),
             }
         }
@@ -73,7 +86,11 @@ pub fn run_template(record: &TemplateRecord, project_name: &str, cwd: &Path) -> 
         allowed_programs,
         permissions,
         logger: Some(std::sync::Arc::new(StdioLogger {})),
-        prompts: Some(std::sync::Arc::new(StdioPrompts {})),
+        prompts: if use_defaults {
+            Some(std::sync::Arc::new(DefaultPrompts {}))
+        } else {
+            Some(std::sync::Arc::new(StdioPrompts {}))
+        },
         ..RuntimeConfig::default()
     });
 
