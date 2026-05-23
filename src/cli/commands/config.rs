@@ -2,8 +2,8 @@ use anyhow::{anyhow, Context, Result};
 use std::process::Command;
 use toml::Value;
 
-use crate::services::storage::config::ConfigStorage;
 use crate::services::paths::PathLayout;
+use crate::services::storage::config::ConfigStorage;
 
 pub fn run_set(key: String, value: String) -> Result<()> {
     let cwd = std::env::current_dir()?;

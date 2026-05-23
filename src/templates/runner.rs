@@ -2,8 +2,8 @@ use anyhow::{anyhow, bail, Result};
 use std::path::Path;
 
 use crate::lua::{Logger, Runtime, RuntimeConfig};
-use crate::services::prompts::{DefaultPrompts, StdioPrompts};
 use crate::services::paths::PathLayout;
+use crate::services::prompts::{DefaultPrompts, StdioPrompts};
 use crate::services::storage::trust::TrustManager;
 use crate::templates::manifest::Permission;
 use crate::templates::resolver::TemplateRecord;

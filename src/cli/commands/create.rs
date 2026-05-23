@@ -1,9 +1,9 @@
 use anyhow::{bail, Context, Result};
 use std::fs;
 
+use crate::services::paths::PathLayout;
 use crate::services::storage::config::{ConfigStorage, UserConfig};
 use crate::services::storage::index::TemplateIndexStorage;
-use crate::services::paths::PathLayout;
 
 pub fn run(name: String, global: bool) -> Result<()> {
     let cwd = std::env::current_dir()?;

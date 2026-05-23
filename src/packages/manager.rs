@@ -230,8 +230,9 @@ fn checksum_dir(dir: &Path) -> Result<String> {
         hasher.update(rel.as_bytes());
         hasher.update([0u8]);
         hasher.update(
-            fs::read(&full)
-                .with_context(|| format!("failed to read file '{}' for checksum", full.display()))?,
+            fs::read(&full).with_context(|| {
+                format!("failed to read file '{}' for checksum", full.display())
+            })?,
         );
         hasher.update([0u8]);
     }
@@ -252,7 +253,10 @@ fn collect_files(root: &Path, current: &Path, out: &mut Vec<String>) -> Result<(
             continue;
         }
         if ft.is_symlink() {
-            bail!("symlinks are not supported in package templates: {}", path.display());
+            bail!(
+                "symlinks are not supported in package templates: {}",
+                path.display()
+            );
         }
         if ft.is_file() {
             let rel = path

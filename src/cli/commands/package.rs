@@ -111,9 +111,7 @@ pub fn run_list() -> Result<()> {
     Ok(())
 }
 
-fn select_interactively(
-    templates: &[crate::packages::ProbedTemplate],
-) -> Result<Vec<String>> {
+fn select_interactively(templates: &[crate::packages::ProbedTemplate]) -> Result<Vec<String>> {
     if templates.is_empty() {
         bail!("repository contains no templates");
     }
@@ -122,7 +120,9 @@ fn select_interactively(
         println!("  {} ({})", t.name, t.version);
     }
     print!("templates: ");
-    std::io::stdout().flush().context("failed to flush stdout")?;
+    std::io::stdout()
+        .flush()
+        .context("failed to flush stdout")?;
     let mut line = String::new();
     std::io::stdin()
         .read_line(&mut line)
