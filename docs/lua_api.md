@@ -304,6 +304,17 @@ forge.exec({ "npm", "install" }, {
 })
 ```
 
+## Curated Program API
+
+Use `forge.prog.*` wrappers for curated command families.
+These use `[requires].programs` instead of raw `execution` permission.
+
+```lua
+forge.prog.git.init()
+forge.prog.git.add("-A")
+forge.prog.git.commit("chore: initial scaffold")
+```
+
 `allow_fail = true` lets the template inspect the result and decide what to do:
 
 ```lua

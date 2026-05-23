@@ -36,6 +36,7 @@ values = ["fullstack", "web", "docker"]
 
 [requires]
 commands    = ["git", "docker"]
+programs    = ["git"]
 permissions = ["network"]
 ```
 
@@ -161,6 +162,20 @@ message if any are missing.
 commands = ["git", "docker"]
 ```
 
+Used with `permissions = ["execution"]` for raw `forge.exec`.
+
+### `[requires].programs`
+A list of curated program APIs the template will use (for `forge.prog.*`).
+Each entry must exist on `PATH`.
+
+```toml
+[requires]
+programs = ["git", "cargo"]
+```
+
+This is separate from `commands` so curated wrappers can be allowed without
+granting broad raw execution.
+
 ### `[requires].permissions`
 A list of elevated capabilities the template needs beyond the default sandbox.
 Forge will display these to the user and ask for confirmation before running.
@@ -182,9 +197,13 @@ executing any template that declares permissions:
 
 ```
 Template "fullstack" is requesting elevated permissions:
-  • escape_cwd  — may access paths outside the project directory
+
+  • exec        — may execute external commands: git, npm, docker
+  • escape_cwd  — may read and write paths outside the project directory (!!!)
   • network     — may make network requests
-Proceed? (y/n)
+  • read_env    — may read environment variables beyond: HOME, USER, PATH, SHELL
+  • program     — use the following program APIs: git, cargo
+Trust this template? (y = trust, n = run once, q = quit)
 ```
 
 Unknown permission strings are treated as a validation error — not silently ignored.
