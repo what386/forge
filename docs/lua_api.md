@@ -238,6 +238,14 @@ locals and upvalues visible where `forge.render` or `forge.render_to` is called,
 plus the sandboxed globals. A `nil` result renders as an empty string; every
 other result is converted with Lua's `tostring`.
 
+Use `%{{ ... }}%` when you need literal template delimiters in the output.
+This form is not evaluated; it emits `{{ ... }}` exactly.
+
+```
+%{{args}}%      -- renders as: {{args}}
+%{{version}}%   -- renders as: {{version}}
+```
+
 Use `forge.str.pascal`, `forge.str.camel`, `forge.str.snake`,
 `forge.str.kebab`, `forge.str.upper`, and `forge.str.lower` for string
 helpers. Pipe helper syntax is not supported.

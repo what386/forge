@@ -107,6 +107,51 @@ fn render_expression_uses_forge_helpers_and_nil_is_empty() {
 }
 
 #[test]
+fn render_percent_literal_blocks_emit_raw_delimiters() {
+    let (cfg, _tmp) = base_cfg();
+    let tpl = cfg.template_dir.join("files").join("literal.txt.tpl");
+    fs::write(
+        &tpl,
+        "run *args: %{{args}}% and %{{version}}% and {{ forge.project.name }}",
+    )
+    .expect("write tpl");
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.render('literal.txt.tpl')").expect("write main");
+
+    let mut rt = Runtime::new(cfg.clone());
+    rt.run(main.to_string_lossy().as_ref()).expect("run");
+    let out = fs::read_to_string(cfg.project_dir.join("literal.txt")).expect("read output");
+    assert_eq!(out.trim(), "run *args: {{args}} and {{version}} and my-app");
+}
+
+#[test]
+fn render_expression_allows_right_brace_in_string_literal() {
+    let (cfg, _tmp) = base_cfg();
+    let tpl = cfg.template_dir.join("files").join("brace.txt.tpl");
+    fs::write(&tpl, "{{ \"x}y\" }}").expect("write tpl");
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.render('brace.txt.tpl')").expect("write main");
+
+    let mut rt = Runtime::new(cfg.clone());
+    rt.run(main.to_string_lossy().as_ref()).expect("run");
+    let out = fs::read_to_string(cfg.project_dir.join("brace.txt")).expect("read output");
+    assert_eq!(out.trim(), "x}y");
+}
+
+#[test]
+fn render_unterminated_percent_literal_block_errors() {
+    let (cfg, _tmp) = base_cfg();
+    let tpl = cfg.template_dir.join("files").join("bad_literal.txt.tpl");
+    fs::write(&tpl, "broken %{{version}}").expect("write tpl");
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.render('bad_literal.txt.tpl')").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt.run(main.to_string_lossy().as_ref()).expect_err("error");
+    assert!(err.to_string().contains("unterminated literal block"));
+}
+
+#[test]
 fn sandbox_removes_dofile() {
     let (cfg, _tmp) = base_cfg();
     let main = cfg.template_dir.join("main.lua");

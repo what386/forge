@@ -4,15 +4,10 @@ use crate::lua::fs::{safe_project_path_with_escape, safe_template_path};
 use crate::lua::runtime::{Runtime, RuntimeState};
 use crate::templates::manifest::Permission;
 use mlua::{Function, Lua, Table, Value};
-use once_cell::sync::Lazy;
-use regex::Regex;
 use std::cell::RefCell;
 use std::fs;
 use std::path::Path;
 use std::rc::Rc;
-
-static TEMPLATE_BLOCK_RE: Lazy<Regex> =
-    Lazy::new(|| Regex::new(r"\{\{\s*([^}]+)\s*\}\}").expect("valid regex"));
 
 pub(crate) fn register_render(
     lua: &Lua,
@@ -186,24 +181,89 @@ fn walk_files(root: &Path) -> Result<Vec<(std::path::PathBuf, String)>, LuaError
 
 fn interpolate(lua: &Lua, input: &str, file: &str, scope: Table) -> Result<String, LuaError> {
     let mut out = String::new();
-    let mut last = 0usize;
-    for caps in TEMPLATE_BLOCK_RE.captures_iter(input) {
-        let m = caps.get(0).expect("capture");
-        out.push_str(&input[last..m.start()]);
-        let inner = caps.get(1).map(|x| x.as_str()).unwrap_or("").trim();
-        if inner.contains('|') {
-            return Err(render_err(
-                file,
-                inner,
-                "pipe helpers are no longer supported; use Lua expressions",
-            ));
+    let mut i = 0usize;
+    let bytes = input.as_bytes();
+    while i < bytes.len() {
+        if bytes[i..].starts_with(b"%{{") {
+            let Some(end) = find_literal_end(bytes, i + 3) else {
+                return Err(LuaError::new(
+                    ErrorKind::Render,
+                    format!("unterminated literal block %{{{{ ... }}}}% in {}", file),
+                ));
+            };
+            let inner = &input[i + 3..end];
+            out.push_str("{{");
+            out.push_str(inner);
+            out.push_str("}}");
+            i = end + 3;
+            continue;
         }
-        let value = eval_expr(lua, &scope, inner).map_err(|e| render_err(file, inner, e))?;
-        out.push_str(&value);
-        last = m.end();
+
+        if bytes[i..].starts_with(b"{{") {
+            let Some(end) = find_expr_end(bytes, i + 2) else {
+                return Err(LuaError::new(
+                    ErrorKind::Render,
+                    format!("unterminated template block {{{{ ... }}}} in {}", file),
+                ));
+            };
+            let inner = input[i + 2..end].trim();
+            if inner.contains('|') {
+                return Err(render_err(
+                    file,
+                    inner,
+                    "pipe helpers are no longer supported; use Lua expressions",
+                ));
+            }
+            let value = eval_expr(lua, &scope, inner).map_err(|e| render_err(file, inner, e))?;
+            out.push_str(&value);
+            i = end + 2;
+            continue;
+        }
+
+        out.push(bytes[i] as char);
+        i += 1;
     }
-    out.push_str(&input[last..]);
     Ok(out)
+}
+
+fn find_literal_end(bytes: &[u8], mut i: usize) -> Option<usize> {
+    while i + 2 < bytes.len() {
+        if bytes[i] == b'}' && bytes[i + 1] == b'}' && bytes[i + 2] == b'%' {
+            return Some(i);
+        }
+        i += 1;
+    }
+    None
+}
+
+fn find_expr_end(bytes: &[u8], mut i: usize) -> Option<usize> {
+    let mut quote: Option<u8> = None;
+    let mut escaped = false;
+    while i + 1 < bytes.len() {
+        let b = bytes[i];
+        if let Some(q) = quote {
+            if escaped {
+                escaped = false;
+            } else if b == b'\\' {
+                escaped = true;
+            } else if b == q {
+                quote = None;
+            }
+            i += 1;
+            continue;
+        }
+
+        if b == b'\'' || b == b'"' {
+            quote = Some(b);
+            i += 1;
+            continue;
+        }
+        if b == b'}' && bytes[i + 1] == b'}' {
+            return Some(i);
+        }
+        i += 1;
+    }
+    None
 }
 
 fn eval_expr(lua: &Lua, scope: &Table, expr: &str) -> Result<String, String> {
