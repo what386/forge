@@ -28,6 +28,7 @@ values = ["fullstack", "web"]
 
 [requires]
 commands = ["cargo"]
+programs = ["cargo"]
 permissions = ["execution", "network", "read_env"]
 "#,
     );
@@ -154,6 +155,30 @@ commands = ["forge_cmd_that_definitely_does_not_exist_123"]
     assert!(err
         .to_string()
         .contains("required command not found on PATH"));
+}
+
+#[test]
+fn fails_on_missing_required_program() {
+    let tmp = tempfile::tempdir().expect("tempdir");
+    let template = tmp.path().join("basic");
+    write_manifest(
+        &template,
+        r#"
+[package]
+name = "basic"
+version = "1.0.0"
+description = "desc"
+min_forge_version = "0.1.0"
+
+[requires]
+programs = ["forge_program_that_definitely_does_not_exist_123"]
+"#,
+    );
+
+    let err = load_and_validate(&template).expect_err("should fail");
+    assert!(err
+        .to_string()
+        .contains("required program not found on PATH"));
 }
 
 #[test]

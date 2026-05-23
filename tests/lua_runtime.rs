@@ -289,3 +289,70 @@ fn exec_requires_execution_permission() {
         .to_string()
         .contains("requires [requires].permissions to include execution"));
 }
+
+#[cfg(unix)]
+#[test]
+fn prog_git_init_requires_program_allowlist() {
+    let (cfg, _tmp) = base_cfg();
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.prog.git.init()").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt
+        .run(main.to_string_lossy().as_ref())
+        .expect_err("requires program allowlist");
+    assert!(err
+        .to_string()
+        .contains("program not declared in [requires].programs: git"));
+}
+
+#[cfg(unix)]
+#[test]
+fn prog_git_init_does_not_require_execution_permission() {
+    let (mut cfg, _tmp) = base_cfg();
+    cfg.allowed_programs = vec!["sh".to_string()];
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.prog.git.init()").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt
+        .run(main.to_string_lossy().as_ref())
+        .expect_err("requires git allowlist");
+    assert!(err
+        .to_string()
+        .contains("program not declared in [requires].programs: git"));
+}
+
+#[cfg(unix)]
+#[test]
+fn prog_git_add_requires_arguments() {
+    let (mut cfg, _tmp) = base_cfg();
+    cfg.allowed_programs = vec!["git".to_string()];
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.prog.git.add()").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt
+        .run(main.to_string_lossy().as_ref())
+        .expect_err("must fail");
+    assert!(err
+        .to_string()
+        .contains("forge.prog.git.add requires at least one argument"));
+}
+
+#[cfg(unix)]
+#[test]
+fn prog_git_commit_requires_message() {
+    let (mut cfg, _tmp) = base_cfg();
+    cfg.allowed_programs = vec!["git".to_string()];
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.prog.git.commit('  ')").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt
+        .run(main.to_string_lossy().as_ref())
+        .expect_err("must fail");
+    assert!(err
+        .to_string()
+        .contains("forge.prog.git.commit requires a non-empty message"));
+}
