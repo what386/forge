@@ -485,8 +485,7 @@ pub(crate) fn lua_err(err: mlua::Error) -> LuaError {
 
 fn words(input: &str) -> Vec<String> {
     input
-        .replace('-', " ")
-        .replace('_', " ")
+        .replace(['-', '_'], " ")
         .split_whitespace()
         .map(|s| s.to_ascii_lowercase())
         .collect()

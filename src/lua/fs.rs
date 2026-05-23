@@ -146,13 +146,11 @@ pub(crate) fn safe_project_path_with_escape(
     allow_escape: bool,
 ) -> Result<PathBuf, LuaError> {
     let rel_path = Path::new(rel);
-    if !allow_escape {
-        if rel_path.is_absolute() || has_parent_component(rel_path) {
-            return Err(LuaError::new(
-                ErrorKind::SandboxViolation,
-                format!("path escapes project dir: {}", rel),
-            ));
-        }
+    if !allow_escape && (rel_path.is_absolute() || has_parent_component(rel_path)) {
+        return Err(LuaError::new(
+            ErrorKind::SandboxViolation,
+            format!("path escapes project dir: {}", rel),
+        ));
     }
 
     let base_abs = base

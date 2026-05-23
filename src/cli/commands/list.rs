@@ -8,8 +8,8 @@ pub fn run(global: bool, local: bool) -> Result<()> {
     let layout = PathLayout::discover(cwd)?;
     let resolver = TemplateResolver::new(layout);
 
-    let include_local = if global { false } else { true };
-    let include_global = if local { false } else { true };
+    let include_local = !global;
+    let include_global = !local;
     let records = resolver.list(include_local, include_global)?;
 
     println!("NAME\tVERSION\tSOURCE\tDESCRIPTION");
