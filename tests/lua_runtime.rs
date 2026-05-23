@@ -1,4 +1,5 @@
 use forge::lua::{Runtime, RuntimeConfig};
+use forge::templates::manifest::Permission;
 use std::fs;
 
 fn base_cfg() -> (RuntimeConfig, tempfile::TempDir) {
@@ -130,4 +131,97 @@ fn sandbox_keeps_debug_private_from_templates_and_blocks() {
     rt.run(main.to_string_lossy().as_ref()).expect("run");
     let out = fs::read_to_string(cfg.project_dir.join("debug.txt")).expect("read output");
     assert_eq!(out.trim(), "true");
+}
+
+#[test]
+fn render_rejects_template_path_escape() {
+    let (cfg, tmp) = base_cfg();
+    fs::write(tmp.path().join("secret.txt.tpl"), "secret").expect("write secret");
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.render('../secret.txt.tpl')").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt.run(main.to_string_lossy().as_ref()).expect_err("escape");
+    assert!(err.to_string().contains("path escapes template files dir"));
+}
+
+#[cfg(unix)]
+#[test]
+fn fs_write_rejects_symlink_parent_escape() {
+    use std::os::unix::fs::symlink;
+
+    let (cfg, tmp) = base_cfg();
+    let outside = tmp.path().join("outside");
+    fs::create_dir_all(&outside).expect("outside");
+    symlink(&outside, cfg.project_dir.join("link")).expect("symlink");
+
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.fs.write('link/owned.txt', 'owned')").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt.run(main.to_string_lossy().as_ref()).expect_err("escape");
+    assert!(err.to_string().contains("path escapes project dir"));
+    assert!(!outside.join("owned.txt").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn exec_requires_declared_command() {
+    let (cfg, _tmp) = base_cfg();
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.exec({'sh', '-c', 'true'})").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt
+        .run(main.to_string_lossy().as_ref())
+        .expect_err("declared");
+    assert!(err
+        .to_string()
+        .contains("command not declared in [requires].commands"));
+}
+
+#[cfg(unix)]
+#[test]
+fn exec_clears_undeclared_environment() {
+    let (mut cfg, _tmp) = base_cfg();
+    cfg.allowed_commands = vec!["sh".to_string()];
+    cfg.env_allowlist = vec!["PATH".to_string()];
+    std::env::set_var("FORGE_SECRET_CLEAR_TEST_VALUE", "leaked");
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(
+        &main,
+        r#"
+        local out = forge.exec({'sh', '-c', 'printf "%s" "${FORGE_SECRET_CLEAR_TEST_VALUE:-}"'})
+        forge.fs.write('env.txt', out.stdout)
+        "#,
+    )
+    .expect("write main");
+
+    let mut rt = Runtime::new(cfg.clone());
+    rt.run(main.to_string_lossy().as_ref()).expect("run");
+    let out = fs::read_to_string(cfg.project_dir.join("env.txt")).expect("read env");
+    assert_eq!(out, "");
+}
+
+#[cfg(unix)]
+#[test]
+fn exec_can_inherit_environment_with_read_env_permission() {
+    let (mut cfg, _tmp) = base_cfg();
+    cfg.allowed_commands = vec!["sh".to_string()];
+    cfg.permissions = vec![Permission::ReadEnv];
+    std::env::set_var("FORGE_SECRET_INHERIT_TEST_VALUE", "visible");
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(
+        &main,
+        r#"
+        local out = forge.exec({'sh', '-c', 'printf "%s" "$FORGE_SECRET_INHERIT_TEST_VALUE"'})
+        forge.fs.write('env.txt', out.stdout)
+        "#,
+    )
+    .expect("write main");
+
+    let mut rt = Runtime::new(cfg.clone());
+    rt.run(main.to_string_lossy().as_ref()).expect("run");
+    let out = fs::read_to_string(cfg.project_dir.join("env.txt")).expect("read env");
+    assert_eq!(out, "visible\n");
 }

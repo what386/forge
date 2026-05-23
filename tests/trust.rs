@@ -87,3 +87,17 @@ fn invalid_json_returns_error() {
     let tm = TrustManager::new(trust_file);
     assert!(tm.list_entries().is_err());
 }
+
+#[cfg(unix)]
+#[test]
+fn symlink_templates_cannot_be_trusted() {
+    use std::os::unix::fs::symlink;
+
+    let (_tmp, trust_file, dir) = mk_dir("template");
+    fs::write(dir.join("real.txt"), "hello").expect("write");
+    symlink(dir.join("real.txt"), dir.join("link.txt")).expect("symlink");
+
+    let tm = TrustManager::new(trust_file);
+    let err = tm.trust_dir(&dir).expect_err("symlink rejected");
+    assert!(err.to_string().contains("template contains symlink"));
+}
