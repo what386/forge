@@ -98,6 +98,30 @@ impl TemplateIndexStorage {
         self.save(&index)
     }
 
+    pub fn remove_templates(&self, names: &[String]) -> Result<Vec<String>> {
+        let mut by_name: BTreeMap<String, TemplateIndexEntry> = self
+            .load()?
+            .templates
+            .into_iter()
+            .map(|entry| (entry.name.clone(), entry))
+            .collect();
+
+        let mut removed = Vec::new();
+        for name in names {
+            if by_name.remove(name).is_some() {
+                removed.push(name.clone());
+            }
+        }
+
+        let index = TemplateIndex {
+            version: 1,
+            templates: by_name.into_values().collect(),
+        };
+        self.save(&index)?;
+        removed.sort();
+        Ok(removed)
+    }
+
     pub fn index_path(&self) -> &Path {
         &self.index_file
     }
@@ -154,6 +178,30 @@ mod tests {
         assert_eq!(index.templates[0].path, "templates/fullstack");
         assert_eq!(index.templates[1].name, "rust");
         assert_eq!(index.templates[1].path, "templates/rust-v2");
+
+        cleanup(&root);
+    }
+
+    #[test]
+    fn remove_deletes_existing_entries() {
+        let root = temp_root("remove");
+        let storage = TemplateIndexStorage::new(&root);
+
+        storage
+            .upsert_template("rust", "templates/rust")
+            .expect("insert rust");
+        storage
+            .upsert_template("fullstack", "templates/fullstack")
+            .expect("insert fullstack");
+
+        let removed = storage
+            .remove_templates(&["rust".to_string(), "missing".to_string()])
+            .expect("remove templates");
+        assert_eq!(removed, vec!["rust".to_string()]);
+
+        let index = storage.load().expect("load index");
+        assert_eq!(index.templates.len(), 1);
+        assert_eq!(index.templates[0].name, "fullstack");
 
         cleanup(&root);
     }
