@@ -2,7 +2,7 @@ default:
     just --list
 
 fmt:
-    cargo clippy --fix --bin "upstream-rs"
+    cargo clippy --fix --bin "forge"
     cargo fmt --all
 
 lint:
@@ -16,7 +16,7 @@ test:
 
 
 run *args:
-    cargo run --bin "upstream-rs" -- {{args}}
+    cargo run --bin "forge" -- {{args}}
 
 prepare version:
     lash run scripts/release/prepare.lash {{version}}
