@@ -83,8 +83,17 @@ forge.table.filter = function(t, fn)
     end
 
     local out = {}
+    local seen = {}
+
+    for i, v in ipairs(t) do
+        seen[i] = true
+        if fn(v, i) then
+            out[#out + 1] = v
+        end
+    end
+
     for k, v in pairs(t) do
-        if fn(v, k) then
+        if not seen[k] and fn(v, k) then
             out[k] = v
         end
     end
