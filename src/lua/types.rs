@@ -69,6 +69,7 @@ pub struct RuntimeConfig {
     pub template_dir: PathBuf,
     pub env_allowlist: Vec<String>,
     pub allowed_commands: Vec<String>,
+    pub allowed_programs: Vec<String>,
     pub permissions: Vec<Permission>,
     pub logger: Option<Arc<dyn Logger>>,
     pub prompts: Option<Arc<dyn PromptProvider>>,
