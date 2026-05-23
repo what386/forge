@@ -3,10 +3,14 @@ use crate::lua::errors::{ErrorKind, LuaError};
 use crate::lua::fs::safe_project_path;
 use crate::lua::runtime::{Runtime, RuntimeState};
 use mlua::{Function, Lua, Table, Value};
+use once_cell::sync::Lazy;
 use regex::Regex;
 use std::cell::RefCell;
 use std::fs;
 use std::rc::Rc;
+
+static TEMPLATE_BLOCK_RE: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"\{\{\s*([^}]+)\s*\}\}").expect("valid regex"));
 
 pub(crate) fn register_render(
     lua: &Lua,
@@ -38,57 +42,10 @@ pub(crate) fn register_render(
         .map_err(lua_err)?;
 
     // The wrapper keeps debug access private after the sandbox removes the public debug table.
-    lua.load(
-        r#"
-        local getlocal = debug.getlocal
-        local getinfo = debug.getinfo
-        local getupvalue = debug.getupvalue
-        local render_native = forge.__render_native
-        local render_to_native = forge.__render_to_native
-
-        local function capture_scope(caller_func)
-            local scope = {}
-            local index = 1
-            while true do
-                local name, value = getlocal(3, index)
-                if name == nil then break end
-                if name ~= "(*temporary)" and string.sub(name, 1, 1) ~= "(" then
-                    scope[name] = value
-                end
-                index = index + 1
-            end
-
-            if caller_func then
-                index = 1
-                while true do
-                    local name, value = getupvalue(caller_func, index)
-                    if name == nil then break end
-                    if name ~= "_ENV" and scope[name] == nil then
-                        scope[name] = value
-                    end
-                    index = index + 1
-                end
-            end
-            return scope
-        end
-
-        forge.render = function(src)
-            local caller = getinfo(2, "f")
-            return render_native(src, capture_scope(caller and caller.func))
-        end
-
-        forge.render_to = function(src, dst)
-            local caller = getinfo(2, "f")
-            return render_to_native(src, dst, capture_scope(caller and caller.func))
-        end
-
-        forge.__render_native = nil
-        forge.__render_to_native = nil
-        "#,
-    )
-    .set_name("forge.render wrappers")
-    .exec()
-    .map_err(lua_err)
+    lua.load(include_str!("scripts/render_wrappers.lua"))
+        .set_name("forge.render wrappers")
+        .exec()
+        .map_err(lua_err)
 }
 
 fn render_file(
@@ -113,10 +70,9 @@ fn render_file(
 }
 
 fn interpolate(lua: &Lua, input: &str, file: &str, scope: Table) -> Result<String, LuaError> {
-    let re = Regex::new(r"\{\{\s*([^}]+)\s*\}\}").expect("valid regex");
     let mut out = String::new();
     let mut last = 0usize;
-    for caps in re.captures_iter(input) {
+    for caps in TEMPLATE_BLOCK_RE.captures_iter(input) {
         let m = caps.get(0).expect("capture");
         out.push_str(&input[last..m.start()]);
         let inner = caps.get(1).map(|x| x.as_str()).unwrap_or("").trim();
