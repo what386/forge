@@ -107,6 +107,70 @@ fn render_expression_uses_forge_helpers_and_nil_is_empty() {
 }
 
 #[test]
+fn stdlib_scripts_are_exposed_on_forge_object() {
+    let (cfg, _tmp) = base_cfg();
+    let tpl = cfg.template_dir.join("files").join("stdlib.txt.tpl");
+    fs::write(
+        &tpl,
+        "{{ forge.str.trim(raw) }}|{{ forge.str.join(parts, '-') }}|{{ forge.table.contains(parts, 'b') }}|{{ forge.path.ext(path) }}",
+    )
+    .expect("write tpl");
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(
+        &main,
+        r#"
+        local merged = forge.table.merge({ a = 1 }, { b = 2, a = 3 })
+        if merged.a ~= 3 or merged.b ~= 2 then
+            forge.abort("merge failed")
+        end
+
+        local deep = forge.table.deep_merge({ cfg = { one = 1 } }, { cfg = { two = 2 } })
+        if deep.cfg.one ~= 1 or deep.cfg.two ~= 2 then
+            forge.abort("deep_merge failed")
+        end
+
+        local keys = forge.table.keys({ x = 1, y = 2 })
+        if #keys < 2 then
+            forge.abort("keys failed")
+        end
+
+        local mapped = forge.table.map({ 1, 2, 3 }, function(v) return v * 2 end)
+        if mapped[2] ~= 4 then
+            forge.abort("map failed")
+        end
+
+        local filtered = forge.table.filter({ 1, 2, 3, 4 }, function(v) return v % 2 == 0 end)
+        if filtered[1] ~= 2 or filtered[2] ~= 4 then
+            forge.abort("filter failed")
+        end
+
+        local raw = "  hello  "
+        local parts = forge.str.split("a,b,c", ",")
+        if not forge.str.starts_with("forge", "for") then
+            forge.abort("starts_with failed")
+        end
+        if not forge.str.ends_with("forge", "rge") then
+            forge.abort("ends_with failed")
+        end
+        local path = forge.path.join("src", "main.rs")
+        if forge.path.basename(path) ~= "main.rs" then
+            forge.abort("basename failed")
+        end
+        if forge.path.stem(path) ~= "main" then
+            forge.abort("stem failed")
+        end
+        forge.render("stdlib.txt.tpl")
+        "#,
+    )
+    .expect("write main");
+
+    let mut rt = Runtime::new(cfg.clone());
+    rt.run(main.to_string_lossy().as_ref()).expect("run");
+    let out = fs::read_to_string(cfg.project_dir.join("stdlib.txt")).expect("read output");
+    assert_eq!(out.trim(), "hello|a-b-c|true|rs");
+}
+
+#[test]
 fn render_percent_literal_blocks_emit_raw_delimiters() {
     let (cfg, _tmp) = base_cfg();
     let tpl = cfg.template_dir.join("files").join("literal.txt.tpl");
