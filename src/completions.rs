@@ -1,7 +1,7 @@
 use clap::{CommandFactory, Parser, ValueEnum};
-use clap_complete::{Generator, Shell, generate};
-use std::io;
+use clap_complete::{generate, Generator, Shell};
 use forge_te::cli::arguments::Cli;
+use std::io;
 
 #[derive(Parser, Debug)]
 #[command(
