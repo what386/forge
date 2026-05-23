@@ -17,13 +17,8 @@ include = [
     "src/**/*.rs",
     "src/**/*.lua",
     "README.md",
-    "LICENSE*",
-]
-
-exclude = [
-    ".github",
-    "scripts/",
-    "completions/"
+    "CHANGELOG.md",
+    "LICENSE",
 ]
 
 [features]
@@ -42,12 +37,12 @@ sha2 = "0.10.9"
 once_cell = "1.21.3"
 clap = { version = "4.6.1", features = ["derive"] }
 clap_complete = { version = "4.5.61", optional = true }
+tempfile = "3.13.0"
+time = { version = "0.3.37", features = ["formatting"] }
 
 [dev-dependencies]
-tempfile = "3.13.0"
 
 [[bin]]
 name = "completions"
 path = "src/completions.rs"
 required-features = ["shell-completions"]
-
