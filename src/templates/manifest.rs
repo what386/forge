@@ -41,7 +41,7 @@ pub struct Requires {
     pub permissions: Vec<Permission>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Permission {
     EscapeCwd,
     Network,
