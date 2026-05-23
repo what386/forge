@@ -14,6 +14,7 @@ impl Cli {
             Commands::List { global, local } => commands::list::run(global, local),
             Commands::Info { template } => commands::info::run(template),
             Commands::Create { name, global } => commands::create::run(name, global),
+            Commands::Remove { names } => commands::remove::run(names),
             Commands::Check { template, global } => commands::validate::run(template, global),
             Commands::Trust { action } => match action {
                 TrustAction::Add { template, global } => commands::trust::run_add(template, global),

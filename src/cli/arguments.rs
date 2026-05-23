@@ -83,6 +83,19 @@ pub enum Commands {
         global: bool,
     },
 
+    /// Remove local template(s)
+    #[command(long_about = "Remove one or more local templates.\n\n\
+        Deletes template directories from .forge/templates/ and removes them\n\
+        from .forge/templates.json.\n\n\
+        EXAMPLES:\n  \
+        forge remove webapp\n  \
+        forge remove webapp fullstack")]
+    Remove {
+        /// Local template name(s) to remove
+        #[arg(required = true)]
+        names: Vec<String>,
+    },
+
     /// Check a template without executing it
     #[command(long_about = "Check a template without executing it.\n\n\
         Checks that manifest.toml is present and valid, main.lua parses without\n\
@@ -372,6 +385,22 @@ mod tests {
             }
             other => panic!("unexpected command: {:?}", other),
         }
+    }
+
+    #[test]
+    fn remove_parses_one_or_more_names() {
+        let one = Cli::parse_from(["forge", "remove", "webapp"]);
+        assert!(matches!(
+            one.command,
+            Commands::Remove { names } if names == vec!["webapp".to_string()]
+        ));
+
+        let many = Cli::parse_from(["forge", "remove", "webapp", "fullstack"]);
+        assert!(matches!(
+            many.command,
+            Commands::Remove { names }
+                if names == vec!["webapp".to_string(), "fullstack".to_string()]
+        ));
     }
 
     #[test]
