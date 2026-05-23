@@ -1,5 +1,5 @@
 [package]
-name = "forge"
+name = "forge-te"
 version = "0.1.0"
 edition = "2021"
 # TODO: add metadata
