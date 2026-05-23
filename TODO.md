@@ -11,6 +11,10 @@
 - [ ] more template related commands, e.g. remove
       @created 2026-05-23 22:02
 
-- [ ] add stdlib
+
+## Completed
+
+- [x] add stdlib
       @created 2026-05-23 23:21
+      @completed 2026-05-23 23:52
 
