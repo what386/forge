@@ -1,5 +1,5 @@
 use clap::Parser;
-use forge::cli::Cli;
+use forge-te::cli::Cli;
 
 fn main() {
     if let Err(err) = Cli::parse().run() {
