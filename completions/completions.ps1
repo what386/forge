@@ -29,13 +29,19 @@ Register-ArgumentCompleter -Native -CommandName 'forge' -ScriptBlock {
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available templates')
             [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Print details about a template')
             [CompletionResult]::new('create', 'create', [CompletionResultType]::ParameterValue, 'Scaffold a new blank template')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove local template(s)')
             [CompletionResult]::new('check', 'check', [CompletionResultType]::ParameterValue, 'Check a template without executing it')
             [CompletionResult]::new('trust', 'trust', [CompletionResultType]::ParameterValue, 'Manage template trust')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Manage Forge configuration')
+            [CompletionResult]::new('package', 'package', [CompletionResultType]::ParameterValue, 'Manage remote template packages')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
         'forge;new' {
+            [CompletionResult]::new('-l', '-l', [CompletionResultType]::ParameterName, 'Use local .forge/templates')
+            [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, 'Use local .forge/templates')
+            [CompletionResult]::new('-g', '-g', [CompletionResultType]::ParameterName, 'Use global ~/.forge/templates')
+            [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, 'Use global ~/.forge/templates')
             [CompletionResult]::new('--default', '--default', [CompletionResultType]::ParameterName, 'Use default values for all prompts')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
@@ -51,18 +57,35 @@ Register-ArgumentCompleter -Native -CommandName 'forge' -ScriptBlock {
             break
         }
         'forge;info' {
+            [CompletionResult]::new('-l', '-l', [CompletionResultType]::ParameterName, 'Use local .forge/templates')
+            [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, 'Use local .forge/templates')
+            [CompletionResult]::new('-g', '-g', [CompletionResultType]::ParameterName, 'Use global ~/.forge/templates')
+            [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, 'Use global ~/.forge/templates')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
             break
         }
         'forge;create' {
-            [CompletionResult]::new('-g', '-g', [CompletionResultType]::ParameterName, 'Create in ~/.forge/templates/ instead of .forge/templates/')
-            [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, 'Create in ~/.forge/templates/ instead of .forge/templates/')
+            [CompletionResult]::new('-l', '-l', [CompletionResultType]::ParameterName, 'Create in local .forge/templates/')
+            [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, 'Create in local .forge/templates/')
+            [CompletionResult]::new('-g', '-g', [CompletionResultType]::ParameterName, 'Create in ~/.forge/templates/')
+            [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, 'Create in ~/.forge/templates/')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
+            break
+        }
+        'forge;remove' {
+            [CompletionResult]::new('-l', '-l', [CompletionResultType]::ParameterName, 'Remove from local .forge/templates/')
+            [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, 'Remove from local .forge/templates/')
+            [CompletionResult]::new('-g', '-g', [CompletionResultType]::ParameterName, 'Remove from global ~/.forge/templates/')
+            [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, 'Remove from global ~/.forge/templates/')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
             break
         }
         'forge;check' {
+            [CompletionResult]::new('-l', '-l', [CompletionResultType]::ParameterName, 'Check a template in local .forge/templates/')
+            [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, 'Check a template in local .forge/templates/')
             [CompletionResult]::new('-g', '-g', [CompletionResultType]::ParameterName, 'Check a template in ~/.forge/templates/')
             [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, 'Check a template in ~/.forge/templates/')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
@@ -79,6 +102,8 @@ Register-ArgumentCompleter -Native -CommandName 'forge' -ScriptBlock {
             break
         }
         'forge;trust;add' {
+            [CompletionResult]::new('-l', '-l', [CompletionResultType]::ParameterName, 'Trust a template in local .forge/templates/')
+            [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, 'Trust a template in local .forge/templates/')
             [CompletionResult]::new('-g', '-g', [CompletionResultType]::ParameterName, 'Trust a template in ~/.forge/templates/')
             [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, 'Trust a template in ~/.forge/templates/')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
@@ -86,6 +111,10 @@ Register-ArgumentCompleter -Native -CommandName 'forge' -ScriptBlock {
             break
         }
         'forge;trust;remove' {
+            [CompletionResult]::new('-l', '-l', [CompletionResultType]::ParameterName, 'Remove trust for a template in local .forge/templates/')
+            [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, 'Remove trust for a template in local .forge/templates/')
+            [CompletionResult]::new('-g', '-g', [CompletionResultType]::ParameterName, 'Remove trust for a template in ~/.forge/templates/')
+            [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, 'Remove trust for a template in ~/.forge/templates/')
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
             break
@@ -167,14 +196,80 @@ Register-ArgumentCompleter -Native -CommandName 'forge' -ScriptBlock {
         'forge;config;help;help' {
             break
         }
+        'forge;package' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
+            [CompletionResult]::new('probe', 'probe', [CompletionResultType]::ParameterValue, 'Probe templates from a remote repository')
+            [CompletionResult]::new('install', 'install', [CompletionResultType]::ParameterValue, 'Install templates from a remote repository')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove installed template package(s)')
+            [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Update installed template package(s)')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List installed template packages')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'forge;package;probe' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'forge;package;install' {
+            [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, 'Prompt to select template(s) when names are omitted')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'forge;package;remove' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'forge;package;update' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'forge;package;list' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'forge;package;help' {
+            [CompletionResult]::new('probe', 'probe', [CompletionResultType]::ParameterValue, 'Probe templates from a remote repository')
+            [CompletionResult]::new('install', 'install', [CompletionResultType]::ParameterValue, 'Install templates from a remote repository')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove installed template package(s)')
+            [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Update installed template package(s)')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List installed template packages')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'forge;package;help;probe' {
+            break
+        }
+        'forge;package;help;install' {
+            break
+        }
+        'forge;package;help;remove' {
+            break
+        }
+        'forge;package;help;update' {
+            break
+        }
+        'forge;package;help;list' {
+            break
+        }
+        'forge;package;help;help' {
+            break
+        }
         'forge;help' {
             [CompletionResult]::new('new', 'new', [CompletionResultType]::ParameterValue, 'Scaffold a new project from a template')
             [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List available templates')
             [CompletionResult]::new('info', 'info', [CompletionResultType]::ParameterValue, 'Print details about a template')
             [CompletionResult]::new('create', 'create', [CompletionResultType]::ParameterValue, 'Scaffold a new blank template')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove local template(s)')
             [CompletionResult]::new('check', 'check', [CompletionResultType]::ParameterValue, 'Check a template without executing it')
             [CompletionResult]::new('trust', 'trust', [CompletionResultType]::ParameterValue, 'Manage template trust')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Manage Forge configuration')
+            [CompletionResult]::new('package', 'package', [CompletionResultType]::ParameterValue, 'Manage remote template packages')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
         }
@@ -188,6 +283,9 @@ Register-ArgumentCompleter -Native -CommandName 'forge' -ScriptBlock {
             break
         }
         'forge;help;create' {
+            break
+        }
+        'forge;help;remove' {
             break
         }
         'forge;help;check' {
@@ -225,6 +323,29 @@ Register-ArgumentCompleter -Native -CommandName 'forge' -ScriptBlock {
             break
         }
         'forge;help;config;edit' {
+            break
+        }
+        'forge;help;package' {
+            [CompletionResult]::new('probe', 'probe', [CompletionResultType]::ParameterValue, 'Probe templates from a remote repository')
+            [CompletionResult]::new('install', 'install', [CompletionResultType]::ParameterValue, 'Install templates from a remote repository')
+            [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, 'Remove installed template package(s)')
+            [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, 'Update installed template package(s)')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List installed template packages')
+            break
+        }
+        'forge;help;package;probe' {
+            break
+        }
+        'forge;help;package;install' {
+            break
+        }
+        'forge;help;package;remove' {
+            break
+        }
+        'forge;help;package;update' {
+            break
+        }
+        'forge;help;package;list' {
             break
         }
         'forge;help;help' {

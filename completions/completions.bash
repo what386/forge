@@ -37,6 +37,12 @@ _forge() {
             forge,new)
                 cmd="forge__subcmd__new"
                 ;;
+            forge,package)
+                cmd="forge__subcmd__package"
+                ;;
+            forge,remove)
+                cmd="forge__subcmd__remove"
+                ;;
             forge,trust)
                 cmd="forge__subcmd__trust"
                 ;;
@@ -91,6 +97,12 @@ _forge() {
             forge__subcmd__help,new)
                 cmd="forge__subcmd__help__subcmd__new"
                 ;;
+            forge__subcmd__help,package)
+                cmd="forge__subcmd__help__subcmd__package"
+                ;;
+            forge__subcmd__help,remove)
+                cmd="forge__subcmd__help__subcmd__remove"
+                ;;
             forge__subcmd__help,trust)
                 cmd="forge__subcmd__help__subcmd__trust"
                 ;;
@@ -106,6 +118,21 @@ _forge() {
             forge__subcmd__help__subcmd__config,set)
                 cmd="forge__subcmd__help__subcmd__config__subcmd__set"
                 ;;
+            forge__subcmd__help__subcmd__package,install)
+                cmd="forge__subcmd__help__subcmd__package__subcmd__install"
+                ;;
+            forge__subcmd__help__subcmd__package,list)
+                cmd="forge__subcmd__help__subcmd__package__subcmd__list"
+                ;;
+            forge__subcmd__help__subcmd__package,probe)
+                cmd="forge__subcmd__help__subcmd__package__subcmd__probe"
+                ;;
+            forge__subcmd__help__subcmd__package,remove)
+                cmd="forge__subcmd__help__subcmd__package__subcmd__remove"
+                ;;
+            forge__subcmd__help__subcmd__package,update)
+                cmd="forge__subcmd__help__subcmd__package__subcmd__update"
+                ;;
             forge__subcmd__help__subcmd__trust,add)
                 cmd="forge__subcmd__help__subcmd__trust__subcmd__add"
                 ;;
@@ -114,6 +141,42 @@ _forge() {
                 ;;
             forge__subcmd__help__subcmd__trust,remove)
                 cmd="forge__subcmd__help__subcmd__trust__subcmd__remove"
+                ;;
+            forge__subcmd__package,help)
+                cmd="forge__subcmd__package__subcmd__help"
+                ;;
+            forge__subcmd__package,install)
+                cmd="forge__subcmd__package__subcmd__install"
+                ;;
+            forge__subcmd__package,list)
+                cmd="forge__subcmd__package__subcmd__list"
+                ;;
+            forge__subcmd__package,probe)
+                cmd="forge__subcmd__package__subcmd__probe"
+                ;;
+            forge__subcmd__package,remove)
+                cmd="forge__subcmd__package__subcmd__remove"
+                ;;
+            forge__subcmd__package,update)
+                cmd="forge__subcmd__package__subcmd__update"
+                ;;
+            forge__subcmd__package__subcmd__help,help)
+                cmd="forge__subcmd__package__subcmd__help__subcmd__help"
+                ;;
+            forge__subcmd__package__subcmd__help,install)
+                cmd="forge__subcmd__package__subcmd__help__subcmd__install"
+                ;;
+            forge__subcmd__package__subcmd__help,list)
+                cmd="forge__subcmd__package__subcmd__help__subcmd__list"
+                ;;
+            forge__subcmd__package__subcmd__help,probe)
+                cmd="forge__subcmd__package__subcmd__help__subcmd__probe"
+                ;;
+            forge__subcmd__package__subcmd__help,remove)
+                cmd="forge__subcmd__package__subcmd__help__subcmd__remove"
+                ;;
+            forge__subcmd__package__subcmd__help,update)
+                cmd="forge__subcmd__package__subcmd__help__subcmd__update"
                 ;;
             forge__subcmd__trust,add)
                 cmd="forge__subcmd__trust__subcmd__add"
@@ -146,7 +209,7 @@ _forge() {
 
     case "${cmd}" in
         forge)
-            opts="-h -V --help --version new list info create check trust config help"
+            opts="-h -V --help --version new list info create remove check trust config package help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -160,7 +223,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__check)
-            opts="-g -h --global --help <TEMPLATE>"
+            opts="-l -g -h --local --global --help <TEMPLATE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -328,7 +391,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__create)
-            opts="-g -h --global --help <NAME>"
+            opts="-l -g -h --local --global --help <NAME>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -342,7 +405,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__help)
-            opts="new list info create check trust config help"
+            opts="new list info create remove check trust config package help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -509,6 +572,104 @@ _forge() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        forge__subcmd__help__subcmd__package)
+            opts="probe install remove update list"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__help__subcmd__package__subcmd__install)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__help__subcmd__package__subcmd__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__help__subcmd__package__subcmd__probe)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__help__subcmd__package__subcmd__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__help__subcmd__package__subcmd__update)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__help__subcmd__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         forge__subcmd__help__subcmd__trust)
             opts="add remove list"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
@@ -566,7 +727,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__info)
-            opts="-h --help <TEMPLATE>"
+            opts="-l -g -h --local --global --help <TEMPLATE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -594,7 +755,203 @@ _forge() {
             return 0
             ;;
         forge__subcmd__new)
-            opts="-h --default --help <TEMPLATE> <NAME>"
+            opts="-l -g -h --local --global --default --help <TEMPLATE> <NAME>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package)
+            opts="-h --help probe install remove update list help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__help)
+            opts="probe install remove update list help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__help__subcmd__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__help__subcmd__install)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__help__subcmd__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__help__subcmd__probe)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__help__subcmd__remove)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__help__subcmd__update)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__install)
+            opts="-h --interactive --help <REPO> [TEMPLATES]..."
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__list)
+            opts="-h --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__probe)
+            opts="-h --help <REPO>"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__remove)
+            opts="-h --help [NAMES]..."
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__package__subcmd__update)
+            opts="-h --help [NAMES]..."
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__remove)
+            opts="-l -g -h --local --global --help <NAMES>..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -622,7 +979,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__trust__subcmd__add)
-            opts="-g -h --global --help <TEMPLATE>"
+            opts="-l -g -h --local --global --help <TEMPLATE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -720,7 +1077,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__trust__subcmd__remove)
-            opts="-h --help <TEMPLATE>"
+            opts="-l -g -h --local --global --help <TEMPLATE>"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

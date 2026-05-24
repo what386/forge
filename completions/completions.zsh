@@ -30,6 +30,10 @@ _forge() {
         case $line[1] in
             (new)
 _arguments "${_arguments_options[@]}" : \
+'(-g --global)-l[Use local .forge/templates]' \
+'(-g --global)--local[Use local .forge/templates]' \
+'(-l --local)-g[Use global ~/.forge/templates]' \
+'(-l --local)--global[Use global ~/.forge/templates]' \
 '--default[Use default values for all prompts]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
@@ -49,6 +53,10 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (info)
 _arguments "${_arguments_options[@]}" : \
+'(-g --global)-l[Use local .forge/templates]' \
+'(-g --global)--local[Use local .forge/templates]' \
+'(-l --local)-g[Use global ~/.forge/templates]' \
+'(-l --local)--global[Use global ~/.forge/templates]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 ':template -- Name of the template to inspect:_default' \
@@ -56,17 +64,32 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (create)
 _arguments "${_arguments_options[@]}" : \
-'-g[Create in ~/.forge/templates/ instead of .forge/templates/]' \
-'--global[Create in ~/.forge/templates/ instead of .forge/templates/]' \
+'(-g --global)-l[Create in local .forge/templates/]' \
+'(-g --global)--local[Create in local .forge/templates/]' \
+'(-l --local)-g[Create in ~/.forge/templates/]' \
+'(-l --local)--global[Create in ~/.forge/templates/]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 ':name -- Name of the template to create:_default' \
 && ret=0
 ;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+'(-g --global)-l[Remove from local .forge/templates/]' \
+'(-g --global)--local[Remove from local .forge/templates/]' \
+'(-l --local)-g[Remove from global ~/.forge/templates/]' \
+'(-l --local)--global[Remove from global ~/.forge/templates/]' \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+'*::names -- Template name(s) to remove:_default' \
+&& ret=0
+;;
 (check)
 _arguments "${_arguments_options[@]}" : \
-'-g[Check a template in ~/.forge/templates/]' \
-'--global[Check a template in ~/.forge/templates/]' \
+'(-g --global)-l[Check a template in local .forge/templates/]' \
+'(-g --global)--local[Check a template in local .forge/templates/]' \
+'(-l --local)-g[Check a template in ~/.forge/templates/]' \
+'(-l --local)--global[Check a template in ~/.forge/templates/]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 ':template -- Name of the template to check:_default' \
@@ -88,8 +111,10 @@ _arguments "${_arguments_options[@]}" : \
         case $line[1] in
             (add)
 _arguments "${_arguments_options[@]}" : \
-'-g[Trust a template in ~/.forge/templates/]' \
-'--global[Trust a template in ~/.forge/templates/]' \
+'(-g --global)-l[Trust a template in local .forge/templates/]' \
+'(-g --global)--local[Trust a template in local .forge/templates/]' \
+'(-l --local)-g[Trust a template in ~/.forge/templates/]' \
+'(-l --local)--global[Trust a template in ~/.forge/templates/]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 ':template -- Name of the template to trust:_default' \
@@ -97,6 +122,10 @@ _arguments "${_arguments_options[@]}" : \
 ;;
 (remove)
 _arguments "${_arguments_options[@]}" : \
+'(-g --global)-l[Remove trust for a template in local .forge/templates/]' \
+'(-g --global)--local[Remove trust for a template in local .forge/templates/]' \
+'(-l --local)-g[Remove trust for a template in ~/.forge/templates/]' \
+'(-l --local)--global[Remove trust for a template in ~/.forge/templates/]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 ':template -- Name of the template to untrust:_default' \
@@ -225,6 +254,100 @@ esac
     ;;
 esac
 ;;
+(package)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+":: :_forge__subcmd__package_commands" \
+"*::: :->package" \
+&& ret=0
+
+    case $state in
+    (package)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:forge-package-command-$line[1]:"
+        case $line[1] in
+            (probe)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':repo -- Git URL for the template repository:_default' \
+&& ret=0
+;;
+(install)
+_arguments "${_arguments_options[@]}" : \
+'--interactive[Prompt to select template(s) when names are omitted]' \
+'-h[Print help]' \
+'--help[Print help]' \
+':repo -- Git URL for the template repository:_default' \
+'*::templates -- Template name(s) to install:_default' \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::names -- Installed package/template names to remove (all if omitted):_default' \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+'*::names -- Installed package/template names to update (all if omitted):_default' \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_forge__subcmd__package__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:forge-package-help-command-$line[1]:"
+        case $line[1] in
+            (probe)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(install)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
 (help)
 _arguments "${_arguments_options[@]}" : \
 ":: :_forge__subcmd__help_commands" \
@@ -250,6 +373,10 @@ _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
 (create)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
 ;;
@@ -317,6 +444,42 @@ _arguments "${_arguments_options[@]}" : \
     ;;
 esac
 ;;
+(package)
+_arguments "${_arguments_options[@]}" : \
+":: :_forge__subcmd__help__subcmd__package_commands" \
+"*::: :->package" \
+&& ret=0
+
+    case $state in
+    (package)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:forge-help-package-command-$line[1]:"
+        case $line[1] in
+            (probe)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(install)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(remove)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(update)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
 (help)
 _arguments "${_arguments_options[@]}" : \
 && ret=0
@@ -337,9 +500,11 @@ _forge_commands() {
 'list:List available templates' \
 'info:Print details about a template' \
 'create:Scaffold a new blank template' \
+'remove:Remove local template(s)' \
 'check:Check a template without executing it' \
 'trust:Manage template trust' \
 'config:Manage Forge configuration' \
+'package:Manage remote template packages' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'forge commands' commands "$@"
@@ -428,9 +593,11 @@ _forge__subcmd__help_commands() {
 'list:List available templates' \
 'info:Print details about a template' \
 'create:Scaffold a new blank template' \
+'remove:Remove local template(s)' \
 'check:Check a template without executing it' \
 'trust:Manage template trust' \
 'config:Manage Forge configuration' \
+'package:Manage remote template packages' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
     _describe -t commands 'forge help commands' commands "$@"
@@ -495,6 +662,47 @@ _forge__subcmd__help__subcmd__new_commands() {
     local commands; commands=()
     _describe -t commands 'forge help new commands' commands "$@"
 }
+(( $+functions[_forge__subcmd__help__subcmd__package_commands] )) ||
+_forge__subcmd__help__subcmd__package_commands() {
+    local commands; commands=(
+'probe:Probe templates from a remote repository' \
+'install:Install templates from a remote repository' \
+'remove:Remove installed template package(s)' \
+'update:Update installed template package(s)' \
+'list:List installed template packages' \
+    )
+    _describe -t commands 'forge help package commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__help__subcmd__package__subcmd__install_commands] )) ||
+_forge__subcmd__help__subcmd__package__subcmd__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge help package install commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__help__subcmd__package__subcmd__list_commands] )) ||
+_forge__subcmd__help__subcmd__package__subcmd__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge help package list commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__help__subcmd__package__subcmd__probe_commands] )) ||
+_forge__subcmd__help__subcmd__package__subcmd__probe_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge help package probe commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__help__subcmd__package__subcmd__remove_commands] )) ||
+_forge__subcmd__help__subcmd__package__subcmd__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge help package remove commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__help__subcmd__package__subcmd__update_commands] )) ||
+_forge__subcmd__help__subcmd__package__subcmd__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge help package update commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__help__subcmd__remove_commands] )) ||
+_forge__subcmd__help__subcmd__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge help remove commands' commands "$@"
+}
 (( $+functions[_forge__subcmd__help__subcmd__trust_commands] )) ||
 _forge__subcmd__help__subcmd__trust_commands() {
     local commands; commands=(
@@ -533,6 +741,90 @@ _forge__subcmd__list_commands() {
 _forge__subcmd__new_commands() {
     local commands; commands=()
     _describe -t commands 'forge new commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package_commands] )) ||
+_forge__subcmd__package_commands() {
+    local commands; commands=(
+'probe:Probe templates from a remote repository' \
+'install:Install templates from a remote repository' \
+'remove:Remove installed template package(s)' \
+'update:Update installed template package(s)' \
+'list:List installed template packages' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'forge package commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__help_commands] )) ||
+_forge__subcmd__package__subcmd__help_commands() {
+    local commands; commands=(
+'probe:Probe templates from a remote repository' \
+'install:Install templates from a remote repository' \
+'remove:Remove installed template package(s)' \
+'update:Update installed template package(s)' \
+'list:List installed template packages' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'forge package help commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__help__subcmd__help_commands] )) ||
+_forge__subcmd__package__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge package help help commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__help__subcmd__install_commands] )) ||
+_forge__subcmd__package__subcmd__help__subcmd__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge package help install commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__help__subcmd__list_commands] )) ||
+_forge__subcmd__package__subcmd__help__subcmd__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge package help list commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__help__subcmd__probe_commands] )) ||
+_forge__subcmd__package__subcmd__help__subcmd__probe_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge package help probe commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__help__subcmd__remove_commands] )) ||
+_forge__subcmd__package__subcmd__help__subcmd__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge package help remove commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__help__subcmd__update_commands] )) ||
+_forge__subcmd__package__subcmd__help__subcmd__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge package help update commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__install_commands] )) ||
+_forge__subcmd__package__subcmd__install_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge package install commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__list_commands] )) ||
+_forge__subcmd__package__subcmd__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge package list commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__probe_commands] )) ||
+_forge__subcmd__package__subcmd__probe_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge package probe commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__remove_commands] )) ||
+_forge__subcmd__package__subcmd__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge package remove commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__package__subcmd__update_commands] )) ||
+_forge__subcmd__package__subcmd__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge package update commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__remove_commands] )) ||
+_forge__subcmd__remove_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge remove commands' commands "$@"
 }
 (( $+functions[_forge__subcmd__trust_commands] )) ||
 _forge__subcmd__trust_commands() {

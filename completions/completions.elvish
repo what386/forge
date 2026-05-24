@@ -26,12 +26,18 @@ set edit:completion:arg-completer[forge] = {|@words|
             cand list 'List available templates'
             cand info 'Print details about a template'
             cand create 'Scaffold a new blank template'
+            cand remove 'Remove local template(s)'
             cand check 'Check a template without executing it'
             cand trust 'Manage template trust'
             cand config 'Manage Forge configuration'
+            cand package 'Manage remote template packages'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'forge;new'= {
+            cand -l 'Use local .forge/templates'
+            cand --local 'Use local .forge/templates'
+            cand -g 'Use global ~/.forge/templates'
+            cand --global 'Use global ~/.forge/templates'
             cand --default 'Use default values for all prompts'
             cand -h 'Print help (see more with ''--help'')'
             cand --help 'Print help (see more with ''--help'')'
@@ -45,16 +51,32 @@ set edit:completion:arg-completer[forge] = {|@words|
             cand --help 'Print help (see more with ''--help'')'
         }
         &'forge;info'= {
+            cand -l 'Use local .forge/templates'
+            cand --local 'Use local .forge/templates'
+            cand -g 'Use global ~/.forge/templates'
+            cand --global 'Use global ~/.forge/templates'
             cand -h 'Print help (see more with ''--help'')'
             cand --help 'Print help (see more with ''--help'')'
         }
         &'forge;create'= {
-            cand -g 'Create in ~/.forge/templates/ instead of .forge/templates/'
-            cand --global 'Create in ~/.forge/templates/ instead of .forge/templates/'
+            cand -l 'Create in local .forge/templates/'
+            cand --local 'Create in local .forge/templates/'
+            cand -g 'Create in ~/.forge/templates/'
+            cand --global 'Create in ~/.forge/templates/'
+            cand -h 'Print help (see more with ''--help'')'
+            cand --help 'Print help (see more with ''--help'')'
+        }
+        &'forge;remove'= {
+            cand -l 'Remove from local .forge/templates/'
+            cand --local 'Remove from local .forge/templates/'
+            cand -g 'Remove from global ~/.forge/templates/'
+            cand --global 'Remove from global ~/.forge/templates/'
             cand -h 'Print help (see more with ''--help'')'
             cand --help 'Print help (see more with ''--help'')'
         }
         &'forge;check'= {
+            cand -l 'Check a template in local .forge/templates/'
+            cand --local 'Check a template in local .forge/templates/'
             cand -g 'Check a template in ~/.forge/templates/'
             cand --global 'Check a template in ~/.forge/templates/'
             cand -h 'Print help (see more with ''--help'')'
@@ -69,12 +91,18 @@ set edit:completion:arg-completer[forge] = {|@words|
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'forge;trust;add'= {
+            cand -l 'Trust a template in local .forge/templates/'
+            cand --local 'Trust a template in local .forge/templates/'
             cand -g 'Trust a template in ~/.forge/templates/'
             cand --global 'Trust a template in ~/.forge/templates/'
             cand -h 'Print help (see more with ''--help'')'
             cand --help 'Print help (see more with ''--help'')'
         }
         &'forge;trust;remove'= {
+            cand -l 'Remove trust for a template in local .forge/templates/'
+            cand --local 'Remove trust for a template in local .forge/templates/'
+            cand -g 'Remove trust for a template in ~/.forge/templates/'
+            cand --global 'Remove trust for a template in ~/.forge/templates/'
             cand -h 'Print help (see more with ''--help'')'
             cand --help 'Print help (see more with ''--help'')'
         }
@@ -138,14 +166,67 @@ set edit:completion:arg-completer[forge] = {|@words|
         }
         &'forge;config;help;help'= {
         }
+        &'forge;package'= {
+            cand -h 'Print help (see more with ''--help'')'
+            cand --help 'Print help (see more with ''--help'')'
+            cand probe 'Probe templates from a remote repository'
+            cand install 'Install templates from a remote repository'
+            cand remove 'Remove installed template package(s)'
+            cand update 'Update installed template package(s)'
+            cand list 'List installed template packages'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'forge;package;probe'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'forge;package;install'= {
+            cand --interactive 'Prompt to select template(s) when names are omitted'
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'forge;package;remove'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'forge;package;update'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'forge;package;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'forge;package;help'= {
+            cand probe 'Probe templates from a remote repository'
+            cand install 'Install templates from a remote repository'
+            cand remove 'Remove installed template package(s)'
+            cand update 'Update installed template package(s)'
+            cand list 'List installed template packages'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'forge;package;help;probe'= {
+        }
+        &'forge;package;help;install'= {
+        }
+        &'forge;package;help;remove'= {
+        }
+        &'forge;package;help;update'= {
+        }
+        &'forge;package;help;list'= {
+        }
+        &'forge;package;help;help'= {
+        }
         &'forge;help'= {
             cand new 'Scaffold a new project from a template'
             cand list 'List available templates'
             cand info 'Print details about a template'
             cand create 'Scaffold a new blank template'
+            cand remove 'Remove local template(s)'
             cand check 'Check a template without executing it'
             cand trust 'Manage template trust'
             cand config 'Manage Forge configuration'
+            cand package 'Manage remote template packages'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
         &'forge;help;new'= {
@@ -155,6 +236,8 @@ set edit:completion:arg-completer[forge] = {|@words|
         &'forge;help;info'= {
         }
         &'forge;help;create'= {
+        }
+        &'forge;help;remove'= {
         }
         &'forge;help;check'= {
         }
@@ -182,6 +265,23 @@ set edit:completion:arg-completer[forge] = {|@words|
         &'forge;help;config;list'= {
         }
         &'forge;help;config;edit'= {
+        }
+        &'forge;help;package'= {
+            cand probe 'Probe templates from a remote repository'
+            cand install 'Install templates from a remote repository'
+            cand remove 'Remove installed template package(s)'
+            cand update 'Update installed template package(s)'
+            cand list 'List installed template packages'
+        }
+        &'forge;help;package;probe'= {
+        }
+        &'forge;help;package;install'= {
+        }
+        &'forge;help;package;remove'= {
+        }
+        &'forge;help;package;update'= {
+        }
+        &'forge;help;package;list'= {
         }
         &'forge;help;help'= {
         }
