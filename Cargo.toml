@@ -9,11 +9,13 @@ repository = "https://github.com/what386/forge"
 keywords = ["templates", "lua", "scaffolding", "codegen"]
 categories = ["command-line-utilities", "development-tools", "template-engine"]
 include = [
-    "src/**/*.rs",
-    "src/**/*.lua",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE",
+    "/src/**/*.rs",
+    "/src/**/*.lua",
+    "/tests/**/*.rs",
+    "/build.rs",
+    "/README.md",
+    "/CHANGELOG.md",
+    "/LICENSE",
 ]
 
 [[bin]]
