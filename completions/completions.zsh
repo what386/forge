@@ -500,7 +500,7 @@ _forge_commands() {
 'list:List available templates' \
 'info:Print details about a template' \
 'create:Scaffold a new blank template' \
-'remove:Remove local template(s)' \
+'remove:Remove template(s)' \
 'check:Check a template without executing it' \
 'trust:Manage template trust' \
 'config:Manage Forge configuration' \
@@ -593,7 +593,7 @@ _forge__subcmd__help_commands() {
 'list:List available templates' \
 'info:Print details about a template' \
 'create:Scaffold a new blank template' \
-'remove:Remove local template(s)' \
+'remove:Remove template(s)' \
 'check:Check a template without executing it' \
 'trust:Manage template trust' \
 'config:Manage Forge configuration' \
