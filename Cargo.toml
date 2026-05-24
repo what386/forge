@@ -8,11 +8,6 @@ description = "A lua-powered templating engine."
 repository = "https://github.com/what386/forge"
 keywords = ["templates", "lua", "scaffolding", "codegen"]
 categories = ["command-line-utilities", "development-tools", "template-engine"]
-
-[[bin]]
-name = "forge"
-path = "src/main.rs"
-
 include = [
     "src/**/*.rs",
     "src/**/*.lua",
@@ -20,6 +15,10 @@ include = [
     "CHANGELOG.md",
     "LICENSE",
 ]
+
+[[bin]]
+name = "forge"
+path = "src/main.rs"
 
 [features]
 default = []
