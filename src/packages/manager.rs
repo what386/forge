@@ -281,6 +281,14 @@ mod tests {
         let path = root.join(name);
         fs::create_dir_all(&path).expect("mkdir");
         fs::write(path.join("main.lua"), "-- lua").expect("write");
+        fs::write(
+            path.join("manifest.toml"),
+            format!(
+                "[package]\nname = \"{}\"\nversion = \"1.0.0\"\ndescription = \"desc\"\nmin_forge_version = \"0.1.0\"\n",
+                name
+            ),
+        )
+        .expect("write manifest");
         ProbedTemplate {
             name: name.to_string(),
             path: name.to_string(),
@@ -327,5 +335,45 @@ mod tests {
             )
             .expect_err("conflict");
         assert!(format!("{err:#}").contains("already installed"));
+    }
+
+    #[test]
+    fn installed_templates_are_resolvable_as_package_templates() {
+        let root = tempfile::tempdir().expect("root");
+        let forge_root = root.path().join(".forge");
+        let manager = PackageManager {
+            packages_root: forge_root.join("packages"),
+            index_path: forge_root.join("packages.json"),
+            forge_root: forge_root.clone(),
+        };
+        let repo = tempfile::tempdir().expect("repo");
+        let probed = ProbedPackage {
+            repo_root: repo.path().to_path_buf(),
+            templates: vec![make_template(repo.path(), "fullstack")],
+        };
+
+        manager
+            .install_templates(
+                "https://example.com/templates.git",
+                &probed,
+                &[String::from("fullstack")],
+            )
+            .expect("install template");
+
+        let layout = crate::services::paths::PathLayout {
+            cwd: root.path().join("project"),
+            local_root: root.path().join("project/.forge"),
+            global_root: forge_root.clone(),
+            local_templates: root.path().join("project/.forge/templates"),
+            global_templates: forge_root.join("templates"),
+            package_templates: forge_root.join("packages"),
+            trust_file: forge_root.join("trust.json"),
+            config_file: forge_root.join("config.toml"),
+        };
+        let rec = crate::templates::TemplateResolver::new(layout)
+            .resolve_preferred("fullstack", crate::templates::ResolveScope::Local)
+            .expect("resolve installed package template");
+
+        assert_eq!(rec.source, crate::templates::TemplateSource::Package);
     }
 }
