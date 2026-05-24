@@ -12,7 +12,7 @@
       @created 2026-05-23 23:21
       @completed 2026-05-23 23:52
 
-- [x] add remote template downloading and management
+- [x] add remote template downloading and management (unstable)
       @created 2026-05-23 21:56
       @completed 2026-05-23 23:52
 
