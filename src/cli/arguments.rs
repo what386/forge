@@ -101,7 +101,7 @@ pub enum Commands {
     /// Remove local template(s)
     #[command(long_about = "Remove one or more local templates.\n\n\
         Deletes template directories from .forge/templates/ and removes them\n\
-        from .forge/templates.json.\n\n\
+        from .forge/index.json.\n\n\
         EXAMPLES:\n  \
         forge remove webapp\n  \
         forge remove webapp fullstack")]

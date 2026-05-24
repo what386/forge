@@ -236,7 +236,11 @@ fn checksum_dir(dir: &Path) -> Result<String> {
         );
         hasher.update([0u8]);
     }
-    Ok(format!("{:x}", hasher.finalize()))
+    Ok(hasher
+        .finalize()
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect())
 }
 
 fn collect_files(root: &Path, current: &Path, out: &mut Vec<String>) -> Result<()> {

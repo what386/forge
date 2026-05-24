@@ -32,7 +32,7 @@ pub struct TemplateIndexStorage {
 impl TemplateIndexStorage {
     pub fn new(forge_root: &Path) -> Self {
         Self {
-            index_file: forge_root.join("templates.json"),
+            index_file: forge_root.join("index.json"),
         }
     }
 
@@ -44,7 +44,7 @@ impl TemplateIndexStorage {
         let raw = fs::read_to_string(&self.index_file)
             .with_context(|| format!("failed to read '{}'", self.index_file.display()))?;
         let index: TemplateIndex =
-            serde_json::from_str(&raw).context("invalid templates.json format")?;
+            serde_json::from_str(&raw).context("invalid index.json format")?;
         Ok(index)
     }
 

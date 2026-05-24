@@ -183,7 +183,7 @@ fn checksum_dir(dir: &Path) -> TrustResult<String> {
     }
 
     let digest = hasher.finalize();
-    Ok(format!("{:x}", digest))
+    Ok(digest.iter().map(|b| format!("{:02x}", b)).collect())
 }
 
 fn collect_files(root: &Path, current: &Path, out: &mut Vec<String>) -> TrustResult<()> {

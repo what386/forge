@@ -21,11 +21,10 @@ pub struct ProbedPackage {
 }
 
 pub fn probe_repo(repo_root: &Path) -> Result<ProbedPackage> {
-    let index_path = repo_root.join("templates.json");
+    let index_path = repo_root.join("index.json");
     let raw = fs::read_to_string(&index_path)
         .with_context(|| format!("failed to read '{}'", index_path.display()))?;
-    let index: TemplateIndex =
-        serde_json::from_str(&raw).context("invalid templates.json format")?;
+    let index: TemplateIndex = serde_json::from_str(&raw).context("invalid index.json format")?;
 
     let mut templates = Vec::with_capacity(index.templates.len());
     for entry in index.templates {
@@ -77,7 +76,7 @@ mod tests {
         write_manifest(&fullstack_dir, "fullstack", "A fullstack app");
         write_manifest(&rust_dir, "rust", "A rust app");
         fs::write(
-            root.path().join("templates.json"),
+            root.path().join("index.json"),
             r#"{"version":1,"templates":[{"name":"rust","path":"templates/rust"},{"name":"fullstack","path":"templates/fullstack"}]}"#,
         )
         .expect("write index");
@@ -94,14 +93,14 @@ mod tests {
         let err = probe_repo(root.path()).expect_err("expected error");
         let msg = format!("{err:#}");
         assert!(msg.contains("failed to read"));
-        assert!(msg.contains("templates.json"));
+        assert!(msg.contains("index.json"));
     }
 
     #[test]
     fn probe_repo_errors_when_template_path_missing() {
         let root = tempfile::tempdir().expect("tempdir");
         fs::write(
-            root.path().join("templates.json"),
+            root.path().join("index.json"),
             r#"{"version":1,"templates":[{"name":"fullstack","path":"templates/fullstack"}]}"#,
         )
         .expect("write index");
