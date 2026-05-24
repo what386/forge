@@ -5,3 +5,6 @@
 
 ## Tasks
 
+- [ ] make packages available by default in template commands
+      @created 2026-05-24 01:00
+
