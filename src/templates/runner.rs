@@ -19,6 +19,11 @@ pub fn run_template(
         bail!("output directory already exists: {}", project_dir.display());
     }
 
+    let main_lua = record.dir.join("main.lua");
+    if !main_lua.is_file() {
+        bail!("template is missing main.lua");
+    }
+
     let permissions = record
         .manifest
         .requires
@@ -71,11 +76,6 @@ pub fn run_template(
 
     std::fs::create_dir_all(&project_dir)
         .map_err(|e| anyhow!("failed to create {}: {}", project_dir.display(), e))?;
-
-    let main_lua = record.dir.join("main.lua");
-    if !main_lua.is_file() {
-        bail!("template is missing main.lua");
-    }
 
     let mut runtime = Runtime::new(RuntimeConfig {
         project_name: project_name.to_string(),
@@ -181,5 +181,41 @@ fn confirm_trust_stdin(prompt: &str) -> Result<TrustChoice> {
                 eprintln!("please respond with y, n, or q");
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::templates::manifest::{Manifest, Package};
+    use crate::templates::resolver::TemplateSource;
+
+    #[test]
+    fn missing_main_lua_does_not_create_project_dir() {
+        let tmp = tempfile::tempdir().expect("tmp");
+        let template_dir = tmp.path().join("broken");
+        std::fs::create_dir_all(&template_dir).expect("create template dir");
+        let record = TemplateRecord {
+            name: "broken".to_string(),
+            dir: template_dir,
+            source: TemplateSource::Local,
+            manifest: Manifest {
+                package: Package {
+                    name: "broken".to_string(),
+                    version: "1.0.0".to_string(),
+                    description: "Broken template".to_string(),
+                    min_forge_version: "0.1.0".to_string(),
+                    repository: None,
+                },
+                author: None,
+                tags: None,
+                requires: None,
+            },
+        };
+
+        let err = run_template(&record, "app", tmp.path(), true).expect_err("missing main.lua");
+
+        assert!(format!("{err:#}").contains("template is missing main.lua"));
+        assert!(!tmp.path().join("app").exists());
     }
 }
