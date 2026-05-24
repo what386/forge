@@ -2,6 +2,13 @@
 
 *Generated on 2026-05-24*
 
+## 0.2.1 — 2026-05-24
+
+### Changes
+
+- fix hex issue
+
+
 ## 0.2.0 — 2026-05-24
 
 ### Changes
