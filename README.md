@@ -2,7 +2,7 @@
 
 **Forge** is a Lua-powered project scaffolder.
 
-It runs templates from local (`.forge/templates/`) or global (`~/.forge/templates/`) directories, renders files, prompts for inputs, and can run controlled command workflows.
+It runs templates from local (`.forge/templates/`), global (`~/.forge/templates/`), or package (`~/.forge/packages/`) directories, renders files, prompts for inputs, and can run controlled command workflows.
 
 ---
 
@@ -14,7 +14,7 @@ It runs templates from local (`.forge/templates/`) or global (`~/.forge/template
 - Fine-grained execution controls:
   - raw execution: `forge.exec` (`execution` + `commands`)
   - curated execution: `forge.prog.*` (`programs`)
-- Config support (`~/.forge/config.toml`) including `[user]` defaults for template creation
+- Config support (`~/.forge/config.toml`) including `[user]` defaults for template creation and `[templates]` default scope
 - Template validation before execution
 
 ---
@@ -71,19 +71,30 @@ forge check rust
 ### Project and template commands
 
 ```bash
-forge new <template> <name> [--default]
+forge new <template> <name> [--local|--global] [--default]
 forge list [--local|--global]
-forge info <template>
-forge create <name> [--global]
-forge check <template> [--global]
+forge info <template> [--local|--global]
+forge create <name> [--local|--global]
+forge remove <template>... [--local|--global]
+forge check <template> [--local|--global]
 ```
 
 ### Trust commands
 
 ```bash
-forge trust add <template> [--global]
-forge trust remove <template>
+forge trust add <template> [--local|--global]
+forge trust remove <template> [--local|--global]
 forge trust list
+```
+
+### Package commands
+
+```bash
+forge package probe <repo>
+forge package install <repo> <template>...
+forge package remove [template]...
+forge package update [template]...
+forge package list
 ```
 
 ### Config commands
@@ -91,10 +102,16 @@ forge trust list
 ```bash
 forge config set user.name "Alice"
 forge config set user.email "alice@example.com"
+forge config set templates.default_scope global
 forge config get user.name
 forge config list
 forge config edit
 ```
+
+`templates.default_scope` accepts `local` or `global`. Unscoped template commands
+try that scope first and then package-installed templates. `forge list` shows
+local, global, and package-installed templates unless filtered with `--local` or
+`--global`.
 
 ---
 
@@ -132,6 +149,18 @@ Template layout:
   manifest.toml
   main.lua
   files/
+```
+
+Remote template package repositories use the same template entries in a root
+`index.json` file:
+
+```json
+{
+  "version": 1,
+  "templates": [
+    { "name": "rust", "path": "templates/rust" }
+  ]
+}
 ```
 
 - `.tpl` files in `files/` are rendered and `.tpl` is stripped
