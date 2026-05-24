@@ -1,32 +1,28 @@
 use anyhow::Result;
 
-use crate::cli::commands::scope;
 use crate::services::paths::PathLayout;
 use crate::templates::{TemplateResolver, TemplateSource};
 
 pub fn run(global: bool, local: bool) -> Result<()> {
     let cwd = std::env::current_dir()?;
     let layout = PathLayout::discover(cwd)?;
-    let default_scope = scope::resolve(&layout, false, false)?;
     let resolver = TemplateResolver::new(layout);
 
-    let (include_local, include_global) = if local {
-        (true, false)
+    let (include_local, include_global, include_package) = if local {
+        (true, false, false)
     } else if global {
-        (false, true)
+        (false, true, false)
     } else {
-        match default_scope {
-            crate::templates::ResolveScope::Local => (true, false),
-            crate::templates::ResolveScope::Global => (false, true),
-        }
+        (true, true, true)
     };
-    let records = resolver.list(include_local, include_global)?;
+    let records = resolver.list(include_local, include_global, include_package)?;
 
     println!("NAME\tVERSION\tSOURCE\tDESCRIPTION");
     for rec in records {
         let source = match rec.source {
             TemplateSource::Local => "local",
             TemplateSource::Global => "global",
+            TemplateSource::Package => "package",
         };
         println!(
             "{}\t{}\t{}\t{}",

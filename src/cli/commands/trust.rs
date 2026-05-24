@@ -10,7 +10,11 @@ pub fn run_add(template: String, local: bool, global: bool) -> Result<()> {
     let layout = PathLayout::discover(cwd)?;
     let source = scope::resolve(&layout, local, global)?;
     let resolver = TemplateResolver::new(layout.clone());
-    let rec = resolver.resolve_scoped(&template, source)?;
+    let rec = if local || global {
+        resolver.resolve_scoped(&template, source)?
+    } else {
+        resolver.resolve_preferred(&template, source)?
+    };
 
     let tm = TrustManager::new(layout.trust_file);
     tm.trust_dir(&rec.dir)
@@ -24,7 +28,11 @@ pub fn run_remove(template: String, local: bool, global: bool) -> Result<()> {
     let layout = PathLayout::discover(cwd)?;
     let source = scope::resolve(&layout, local, global)?;
     let resolver = TemplateResolver::new(layout.clone());
-    let rec = resolver.resolve_scoped(&template, source)?;
+    let rec = if local || global {
+        resolver.resolve_scoped(&template, source)?
+    } else {
+        resolver.resolve_preferred(&template, source)?
+    };
 
     let tm = TrustManager::new(layout.trust_file);
     let removed = tm

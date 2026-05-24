@@ -9,7 +9,11 @@ pub fn run(template: String, local: bool, global: bool) -> Result<()> {
     let layout = PathLayout::discover(cwd)?;
     let source = scope::resolve(&layout, local, global)?;
     let resolver = TemplateResolver::new(layout);
-    let rec = resolver.resolve_scoped(&template, source)?;
+    let rec = if local || global {
+        resolver.resolve_scoped(&template, source)?
+    } else {
+        resolver.resolve_preferred(&template, source)?
+    };
 
     println!(
         "{} {}",
@@ -30,6 +34,7 @@ pub fn run(template: String, local: bool, global: bool) -> Result<()> {
         match rec.source {
             TemplateSource::Local => "local",
             TemplateSource::Global => "global",
+            TemplateSource::Package => "package",
         },
         rec.dir.display()
     );

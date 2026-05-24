@@ -4,7 +4,8 @@ use clap::{Parser, Subcommand};
 #[command(name = "forge")]
 #[command(about = "A Lua-powered template engine.")]
 #[command(long_about = "Forge scaffolds new projects from Lua templates.\n\n\
-    Templates live in .forge/templates/ (local) or ~/.forge/templates/ (global).\n\n\
+    Templates live in .forge/templates/ (local), ~/.forge/templates/ (global),\n\
+    or ~/.forge/packages/ (package-installed).\n\n\
     EXAMPLES:\n  \
     forge new webapp my-app\n  \
     forge list\n  \
@@ -47,8 +48,9 @@ pub enum Commands {
 
     /// List available templates
     #[command(long_about = "List all available templates.\n\n\
-        Searches both .forge/templates/ (local) and ~/.forge/templates/ (global).\n\
-        Local templates are listed first and take precedence over global ones.\n\n\
+        Searches .forge/templates/ (local), ~/.forge/templates/ (global), and\n\
+        ~/.forge/packages/ (package-installed templates). Use --local or --global\n\
+        to restrict the result set.\n\n\
         EXAMPLES:\n  \
         forge list\n  \
         forge list --local\n  \
@@ -98,13 +100,14 @@ pub enum Commands {
         global: bool,
     },
 
-    /// Remove local template(s)
-    #[command(long_about = "Remove one or more local templates.\n\n\
-        Deletes template directories from .forge/templates/ and removes them\n\
-        from .forge/index.json.\n\n\
+    /// Remove template(s)
+    #[command(long_about = "Remove one or more local or global templates.\n\n\
+        Deletes template directories from the selected template scope and removes\n\
+        them from that scope's index.json.\n\n\
         EXAMPLES:\n  \
         forge remove webapp\n  \
-        forge remove webapp fullstack")]
+        forge remove webapp fullstack\n  \
+        forge remove webapp --global")]
     Remove {
         /// Template name(s) to remove
         #[arg(required = true)]

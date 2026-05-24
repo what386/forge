@@ -15,6 +15,10 @@ pub fn run(
     let layout = PathLayout::discover(cwd.clone())?;
     let source = scope::resolve(&layout, local, global)?;
     let resolver = TemplateResolver::new(layout);
-    let rec = resolver.resolve_scoped(&template, source)?;
+    let rec = if local || global {
+        resolver.resolve_scoped(&template, source)?
+    } else {
+        resolver.resolve_preferred(&template, source)?
+    };
     run_template(&rec, &name, &cwd, use_defaults)
 }
