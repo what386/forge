@@ -293,7 +293,7 @@ fn expression_env(lua: &Lua, scope: &Table) -> mlua::Result<Table> {
     let globals = lua.globals();
     let mt = lua.create_table()?;
     mt.set("__index", globals)?;
-    env.set_metatable(Some(mt));
+    let _ = env.set_metatable(Some(mt));
     Ok(env)
 }
 
