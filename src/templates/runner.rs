@@ -4,6 +4,7 @@ use std::path::Path;
 use crate::lua::{Logger, Runtime, RuntimeConfig};
 use crate::services::paths::PathLayout;
 use crate::services::prompts::{DefaultPrompts, StdioPrompts};
+use crate::services::storage::fields::FieldsStorage;
 use crate::services::storage::trust::TrustManager;
 use crate::templates::manifest::Permission;
 use crate::templates::resolver::TemplateRecord;
@@ -43,8 +44,10 @@ pub fn run_template(
         .map(|r| r.programs.clone())
         .unwrap_or_default();
 
+    let layout = PathLayout::discover(cwd.to_path_buf())?;
+
     if !permissions.is_empty() || !allowed_programs.is_empty() {
-        let trust = TrustManager::new(PathLayout::discover(cwd.to_path_buf())?.trust_file);
+        let trust = TrustManager::new(layout.trust_file.clone());
         let trusted = trust
             .is_dir_trusted(&record.dir)
             .map_err(|e| anyhow!(e.to_string()))?;
@@ -84,6 +87,7 @@ pub fn run_template(
         template_dir: record.dir.clone(),
         allowed_commands,
         allowed_programs,
+        fields: FieldsStorage::new(&layout.fields_file)?.into_map(),
         permissions,
         logger: Some(std::sync::Arc::new(StdioLogger {})),
         prompts: if use_defaults {

@@ -113,6 +113,18 @@ try that scope first and then package-installed templates. `forge list` shows
 local, global, and package-installed templates unless filtered with `--local` or
 `--global`.
 
+### Field commands
+
+```bash
+forge fields set github.username=alice
+forge fields get github.username
+forge fields clear github.username
+forge fields list
+```
+
+Fields are stored in `~/.forge/fields.json` and exposed to templates with
+`forge.fields.get("github.username")`.
+
 ---
 
 ## Permissions and Trust
@@ -175,6 +187,10 @@ Curated program API example:
 forge.prog.git.init()
 forge.prog.git.add("-A")
 forge.prog.git.commit("chore: initial scaffold")
+forge.prog.cargo.init("--bin")
+forge.prog.cargo.add("anyhow")
+forge.prog.cargo.check()
+forge.prog.cargo.gen_lockfile()
 ```
 
 Stdlib helpers exposed on `forge`:

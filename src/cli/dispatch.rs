@@ -1,6 +1,8 @@
 use anyhow::Result;
 
-use crate::cli::arguments::{Cli, Commands, ConfigAction, PackageAction, TrustAction};
+use crate::cli::arguments::{
+    Cli, Commands, ConfigAction, FieldsAction, PackageAction, TrustAction,
+};
 use crate::cli::commands;
 
 impl Cli {
@@ -52,6 +54,12 @@ impl Cli {
                 ConfigAction::Get { key } => commands::config::run_get(key),
                 ConfigAction::List => commands::config::run_list(),
                 ConfigAction::Edit => commands::config::run_edit(),
+            },
+            Commands::Fields { action } => match action {
+                FieldsAction::Set { assignment } => commands::fields::run_set(assignment),
+                FieldsAction::Get { name } => commands::fields::run_get(name),
+                FieldsAction::Clear { name } => commands::fields::run_clear(name),
+                FieldsAction::List => commands::fields::run_list(),
             },
             Commands::Package { action } => match action {
                 PackageAction::Probe { repo } => commands::package::run_probe(repo),

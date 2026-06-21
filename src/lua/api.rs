@@ -18,6 +18,7 @@ pub(crate) fn register_api(lua: &Lua, state: Rc<RefCell<RuntimeState>>) -> Resul
     register_abort(lua, &forge, state.clone())?;
     register_logging(lua, &forge, state.clone())?;
     register_args(lua, &forge, state.clone())?;
+    register_fields(lua, &forge, state.clone())?;
     register_prompt(lua, &forge, state.clone())?;
     register_strings(lua, &forge)?;
     register_stdlib_scripts(lua)?;
@@ -66,6 +67,32 @@ fn register_context(
         .set("vars", lua.create_table().map_err(lua_err)?)
         .map_err(lua_err)?;
     Ok(())
+}
+
+fn register_fields(
+    lua: &Lua,
+    forge: &Table,
+    state: Rc<RefCell<RuntimeState>>,
+) -> Result<(), LuaError> {
+    let fields = lua.create_table().map_err(lua_err)?;
+    let st = state.clone();
+    fields
+        .set(
+            "get",
+            lua.create_function(move |lua, name: String| {
+                let value = st.borrow().cfg.fields.get(&name).cloned();
+                match value {
+                    Some(value) => Ok(Value::String(lua.create_string(&value)?)),
+                    None => Err(mlua::Error::external(LuaError::new(
+                        ErrorKind::Abort,
+                        format!("field not found: {}", name),
+                    ))),
+                }
+            })
+            .map_err(lua_err)?,
+        )
+        .map_err(lua_err)?;
+    forge.set("fields", fields).map_err(lua_err)
 }
 
 fn register_hooks(

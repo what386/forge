@@ -45,6 +45,11 @@ Use `forge.prog.*` wrappers for curated command families. These use `[requires].
 forge.prog.git.init()
 forge.prog.git.add("-A")
 forge.prog.git.commit("chore: initial scaffold")
+
+forge.prog.cargo.init("--bin")
+forge.prog.cargo.add("anyhow")
+forge.prog.cargo.check()
+forge.prog.cargo.gen_lockfile()
 ```
 
 ## Detecting Tools

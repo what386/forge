@@ -11,6 +11,7 @@ pub struct PathLayout {
     pub package_templates: PathBuf,
     pub trust_file: PathBuf,
     pub config_file: PathBuf,
+    pub fields_file: PathBuf,
 }
 
 impl PathLayout {
@@ -25,7 +26,8 @@ impl PathLayout {
             global_templates: global_root.clone().join("templates"),
             package_templates: global_root.clone().join("packages"),
             trust_file: global_root.clone().join("trust.json"),
-            config_file: global_root.join("config.toml"),
+            config_file: global_root.clone().join("config.toml"),
+            fields_file: global_root.join("fields.json"),
         })
     }
 }

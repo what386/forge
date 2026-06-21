@@ -51,3 +51,12 @@ forge.vars.port
 forge.vars.git
 forge.vars.author
 ```
+
+Persistent fields configured with `forge fields set NAME=VALUE` are available
+through:
+
+```lua
+forge.fields.get("github.username")
+```
+
+Missing fields abort the template with a clear error.

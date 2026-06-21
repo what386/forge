@@ -1,5 +1,6 @@
 use crate::lua::errors::LuaError;
 use crate::templates::manifest::Permission;
+use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -70,6 +71,7 @@ pub struct RuntimeConfig {
     pub env_allowlist: Vec<String>,
     pub allowed_commands: Vec<String>,
     pub allowed_programs: Vec<String>,
+    pub fields: BTreeMap<String, String>,
     pub permissions: Vec<Permission>,
     pub logger: Option<Arc<dyn Logger>>,
     pub prompts: Option<Arc<dyn PromptProvider>>,

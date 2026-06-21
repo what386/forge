@@ -178,6 +178,7 @@ mod tests {
             package_templates: global_root.join("packages"),
             trust_file: global_root.join("trust.json"),
             config_file: global_root.join("config.toml"),
+            fields_file: global_root.join("fields.json"),
         }
     }
 

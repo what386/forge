@@ -14,6 +14,7 @@ forge.template.dir
 ```lua
 forge.args(schema)
 forge.vars.*
+forge.fields.get(name)
 ```
 
 ## Rendering
@@ -42,6 +43,16 @@ forge.exec(cmd, opts?)
 forge.prog.git.init()
 forge.prog.git.add(...)
 forge.prog.git.commit(message)
+forge.prog.cargo.init(...)
+forge.prog.cargo.new(name, ...)
+forge.prog.cargo.add(crate, ...)
+forge.prog.cargo.build(...)
+forge.prog.cargo.check(...)
+forge.prog.cargo.test(...)
+forge.prog.cargo.run(...)
+forge.prog.cargo.fmt(...)
+forge.prog.cargo.clippy(...)
+forge.prog.cargo.gen_lockfile(...)
 ```
 
 ## Logging

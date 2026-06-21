@@ -369,6 +369,7 @@ mod tests {
             package_templates: forge_root.join("packages"),
             trust_file: forge_root.join("trust.json"),
             config_file: forge_root.join("config.toml"),
+            fields_file: forge_root.join("fields.json"),
         };
         let rec = crate::templates::TemplateResolver::new(layout)
             .resolve_preferred("fullstack", crate::templates::ResolveScope::Local)

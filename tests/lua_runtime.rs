@@ -1,6 +1,9 @@
-use forge_te::lua::{Runtime, RuntimeConfig};
+use forge_te::lua::{ExecOptions, ExecResult, ExecRunner, LuaError, Runtime, RuntimeConfig};
 use forge_te::templates::manifest::Permission;
+use std::collections::BTreeMap;
 use std::fs;
+use std::path::Path;
+use std::sync::{Arc, Mutex};
 
 fn base_cfg() -> (RuntimeConfig, tempfile::TempDir) {
     let tmp = tempfile::tempdir().expect("tempdir");
@@ -168,6 +171,41 @@ fn stdlib_scripts_are_exposed_on_forge_object() {
     rt.run(main.to_string_lossy().as_ref()).expect("run");
     let out = fs::read_to_string(cfg.project_dir.join("stdlib.txt")).expect("read output");
     assert_eq!(out.trim(), "hello|a-b-c|true|rs");
+}
+
+#[test]
+fn fields_get_reads_configured_fields() {
+    let (mut cfg, _tmp) = base_cfg();
+    cfg.fields = BTreeMap::from([
+        ("github.username".to_string(), "alice".to_string()),
+        ("email".to_string(), "alice@example.com".to_string()),
+    ]);
+    let tpl = cfg.template_dir.join("files").join("fields.txt.tpl");
+    fs::write(
+        &tpl,
+        "{{ forge.fields.get('github.username') }}|{{ forge.fields.get('email') }}",
+    )
+    .expect("write tpl");
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.render('fields.txt.tpl')").expect("write main");
+
+    let mut rt = Runtime::new(cfg.clone());
+    rt.run(main.to_string_lossy().as_ref()).expect("run");
+    let out = fs::read_to_string(cfg.project_dir.join("fields.txt")).expect("read output");
+    assert_eq!(out.trim(), "alice|alice@example.com");
+}
+
+#[test]
+fn fields_get_errors_when_field_is_missing() {
+    let (cfg, _tmp) = base_cfg();
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.fields.get('missing')").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt
+        .run(main.to_string_lossy().as_ref())
+        .expect_err("missing");
+    assert!(err.to_string().contains("field not found: missing"));
 }
 
 #[test]
@@ -419,4 +457,102 @@ fn prog_git_commit_requires_message() {
     assert!(err
         .to_string()
         .contains("forge.prog.git.commit requires a non-empty message"));
+}
+
+#[derive(Default)]
+struct RecordingExecRunner {
+    calls: Mutex<Vec<Vec<String>>>,
+}
+
+impl ExecRunner for RecordingExecRunner {
+    fn run(
+        &self,
+        argv: &[String],
+        _opts: &ExecOptions,
+        _cwd: &Path,
+        _env_allowlist: &[String],
+        _inherit_env: bool,
+    ) -> Result<ExecResult, LuaError> {
+        self.calls.lock().expect("calls lock").push(argv.to_vec());
+        Ok(ExecResult {
+            ok: true,
+            code: 0,
+            ..ExecResult::default()
+        })
+    }
+}
+
+#[test]
+fn prog_cargo_commands_emit_expected_argv() {
+    let (mut cfg, _tmp) = base_cfg();
+    let runner = Arc::new(RecordingExecRunner::default());
+    cfg.allowed_programs = vec!["cargo".to_string()];
+    cfg.exec = Some(runner.clone());
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(
+        &main,
+        r#"
+        forge.prog.cargo.init("--bin")
+        forge.prog.cargo.new("cli-tool", "--bin")
+        forge.prog.cargo.add("anyhow")
+        forge.prog.cargo.build("--release")
+        forge.prog.cargo.check()
+        forge.prog.cargo.test("--all")
+        forge.prog.cargo.run("--", "--help")
+        forge.prog.cargo.fmt("--all")
+        forge.prog.cargo.clippy("--all-targets")
+        forge.prog.cargo.gen_lockfile()
+        "#,
+    )
+    .expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    rt.run(main.to_string_lossy().as_ref()).expect("run");
+    let calls = runner.calls.lock().expect("calls lock").clone();
+    assert_eq!(
+        calls,
+        vec![
+            vec!["cargo", "init", "--bin"],
+            vec!["cargo", "new", "cli-tool", "--bin"],
+            vec!["cargo", "add", "anyhow"],
+            vec!["cargo", "build", "--release"],
+            vec!["cargo", "check"],
+            vec!["cargo", "test", "--all"],
+            vec!["cargo", "run", "--", "--help"],
+            vec!["cargo", "fmt", "--all"],
+            vec!["cargo", "clippy", "--all-targets"],
+            vec!["cargo", "generate-lockfile"],
+        ]
+    );
+}
+
+#[test]
+fn prog_cargo_requires_program_allowlist() {
+    let (cfg, _tmp) = base_cfg();
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.prog.cargo.check()").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt
+        .run(main.to_string_lossy().as_ref())
+        .expect_err("requires program allowlist");
+    assert!(err
+        .to_string()
+        .contains("program not declared in [requires].programs: cargo"));
+}
+
+#[test]
+fn prog_cargo_new_requires_arguments() {
+    let (mut cfg, _tmp) = base_cfg();
+    cfg.allowed_programs = vec!["cargo".to_string()];
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(&main, "forge.prog.cargo.new()").expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    let err = rt
+        .run(main.to_string_lossy().as_ref())
+        .expect_err("must fail");
+    assert!(err
+        .to_string()
+        .contains("forge.prog.cargo.new requires at least one argument"));
 }

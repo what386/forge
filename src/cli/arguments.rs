@@ -10,8 +10,9 @@ use clap::{Parser, Subcommand};
     forge new webapp my-app\n  \
     forge list\n  \
     forge info webapp\n  \
-    forge create my-template\n  \
-    forge check webapp")]
+        forge create my-template\n  \
+    forge check webapp\n  \
+    forge fields set github.username=alice")]
 #[command(
     version,
     long_version = concat!(env!("CARGO_PKG_VERSION"), " (", env!("GIT_HASH"), ")")
@@ -168,6 +169,23 @@ pub enum Commands {
         action: ConfigAction,
     },
 
+    /// Manage persistent template fields
+    #[command(
+        long_about = "Manage persistent template fields stored in ~/.forge/fields.json.\n\n\
+        Fields are simple name/value pairs that templates can read with\n\
+        forge.fields.get(\"NAME\"). Use them for reusable profile values such as\n\
+        a GitHub username.\n\n\
+        EXAMPLES:\n  \
+        forge fields set github.username=alice\n  \
+        forge fields get github.username\n  \
+        forge fields clear github.username\n  \
+        forge fields list"
+    )]
+    Fields {
+        #[command(subcommand)]
+        action: FieldsAction,
+    },
+
     /// Manage remote template packages
     #[command(long_about = "Manage remote template packages.\n\n\
         EXAMPLES:\n  \
@@ -248,6 +266,27 @@ pub enum ConfigAction {
     List,
     /// Open config.toml in $EDITOR
     Edit,
+}
+
+#[derive(Subcommand, Debug)]
+pub enum FieldsAction {
+    /// Set a persistent field
+    Set {
+        /// Field assignment in NAME=VALUE form
+        assignment: String,
+    },
+    /// Get a persistent field
+    Get {
+        /// Field name
+        name: String,
+    },
+    /// Clear a persistent field
+    Clear {
+        /// Field name
+        name: String,
+    },
+    /// List all persistent fields
+    List,
 }
 
 #[derive(Subcommand, Debug)]
@@ -608,6 +647,50 @@ mod tests {
             cli.command,
             Commands::Config {
                 action: ConfigAction::Edit
+            }
+        ));
+    }
+
+    #[test]
+    fn fields_set_parses_assignment() {
+        let cli = Cli::parse_from(["forge", "fields", "set", "github.username=alice"]);
+        assert!(matches!(
+            cli.command,
+            Commands::Fields {
+                action: FieldsAction::Set { assignment }
+            } if assignment == "github.username=alice"
+        ));
+    }
+
+    #[test]
+    fn fields_get_parses_name() {
+        let cli = Cli::parse_from(["forge", "fields", "get", "github.username"]);
+        assert!(matches!(
+            cli.command,
+            Commands::Fields {
+                action: FieldsAction::Get { name }
+            } if name == "github.username"
+        ));
+    }
+
+    #[test]
+    fn fields_clear_parses_name() {
+        let cli = Cli::parse_from(["forge", "fields", "clear", "github.username"]);
+        assert!(matches!(
+            cli.command,
+            Commands::Fields {
+                action: FieldsAction::Clear { name }
+            } if name == "github.username"
+        ));
+    }
+
+    #[test]
+    fn fields_list_parses() {
+        let cli = Cli::parse_from(["forge", "fields", "list"]);
+        assert!(matches!(
+            cli.command,
+            Commands::Fields {
+                action: FieldsAction::List
             }
         ));
     }

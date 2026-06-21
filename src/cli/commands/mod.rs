@@ -1,5 +1,6 @@
 pub mod config;
 pub mod create;
+pub mod fields;
 pub mod info;
 pub mod list;
 pub mod new;

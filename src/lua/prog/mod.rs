@@ -1,10 +1,12 @@
 use crate::lua::errors::{ErrorKind, LuaError};
+use crate::lua::prog::cargo::register_cargo;
 use crate::lua::prog::git::register_git;
 use crate::lua::runtime::RuntimeState;
 use mlua::{Lua, Table};
 use std::cell::RefCell;
 use std::rc::Rc;
 
+mod cargo;
 mod git;
 
 pub(crate) fn register_prog(
@@ -15,7 +17,8 @@ pub(crate) fn register_prog(
     let prog = lua
         .create_table()
         .map_err(|e| LuaError::new(ErrorKind::Abort, e.to_string()))?;
-    register_git(lua, &prog, state)?;
+    register_git(lua, &prog, state.clone())?;
+    register_cargo(lua, &prog, state)?;
     forge
         .set("prog", prog)
         .map_err(|e| LuaError::new(ErrorKind::Abort, e.to_string()))
