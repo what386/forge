@@ -2,6 +2,14 @@
 
 *Generated on 2026-06-21*
 
+## 0.3.0 — 2026-06-21
+
+### Changes
+
+- Add cargo prog wrapper `lua`, `prog`, `cargo`
+- Add persistent fields CLI and Lua API `cli`, `lua`, `storage`, `fields`
+
+
 ## 0.2.2 — 2026-05-24
 
 ### Changes
