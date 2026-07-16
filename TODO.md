@@ -6,10 +6,3 @@
 
 ## Tasks
 
-
-## Completed
-
-- [x] feat: dotnet program api
-      @created 2026-07-16 17:58
-      @completed 2026-07-16 17:59
-

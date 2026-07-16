@@ -1,6 +1,13 @@
 # Changelog — forge
 
-*Generated on 2026-06-21*
+*Generated on 2026-07-16*
+
+## 0.4.0 — 2026-07-16
+
+### Changes
+
+- feat: dotnet program api
+
 
 ## 0.3.0 — 2026-06-21
 
