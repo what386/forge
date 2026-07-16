@@ -33,6 +33,7 @@ Register-ArgumentCompleter -Native -CommandName 'forge' -ScriptBlock {
             [CompletionResult]::new('check', 'check', [CompletionResultType]::ParameterValue, 'Check a template without executing it')
             [CompletionResult]::new('trust', 'trust', [CompletionResultType]::ParameterValue, 'Manage template trust')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Manage Forge configuration')
+            [CompletionResult]::new('fields', 'fields', [CompletionResultType]::ParameterValue, 'Manage persistent template fields')
             [CompletionResult]::new('package', 'package', [CompletionResultType]::ParameterValue, 'Manage remote template packages')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
@@ -196,6 +197,59 @@ Register-ArgumentCompleter -Native -CommandName 'forge' -ScriptBlock {
         'forge;config;help;help' {
             break
         }
+        'forge;fields' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
+            [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set a persistent field')
+            [CompletionResult]::new('get', 'get', [CompletionResultType]::ParameterValue, 'Get a persistent field')
+            [CompletionResult]::new('clear', 'clear', [CompletionResultType]::ParameterValue, 'Clear a persistent field')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all persistent fields')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'forge;fields;set' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'forge;fields;get' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'forge;fields;clear' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'forge;fields;list' {
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            break
+        }
+        'forge;fields;help' {
+            [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set a persistent field')
+            [CompletionResult]::new('get', 'get', [CompletionResultType]::ParameterValue, 'Get a persistent field')
+            [CompletionResult]::new('clear', 'clear', [CompletionResultType]::ParameterValue, 'Clear a persistent field')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all persistent fields')
+            [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
+            break
+        }
+        'forge;fields;help;set' {
+            break
+        }
+        'forge;fields;help;get' {
+            break
+        }
+        'forge;fields;help;clear' {
+            break
+        }
+        'forge;fields;help;list' {
+            break
+        }
+        'forge;fields;help;help' {
+            break
+        }
         'forge;package' {
             [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
             [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help (see more with ''--help'')')
@@ -269,6 +323,7 @@ Register-ArgumentCompleter -Native -CommandName 'forge' -ScriptBlock {
             [CompletionResult]::new('check', 'check', [CompletionResultType]::ParameterValue, 'Check a template without executing it')
             [CompletionResult]::new('trust', 'trust', [CompletionResultType]::ParameterValue, 'Manage template trust')
             [CompletionResult]::new('config', 'config', [CompletionResultType]::ParameterValue, 'Manage Forge configuration')
+            [CompletionResult]::new('fields', 'fields', [CompletionResultType]::ParameterValue, 'Manage persistent template fields')
             [CompletionResult]::new('package', 'package', [CompletionResultType]::ParameterValue, 'Manage remote template packages')
             [CompletionResult]::new('help', 'help', [CompletionResultType]::ParameterValue, 'Print this message or the help of the given subcommand(s)')
             break
@@ -323,6 +378,25 @@ Register-ArgumentCompleter -Native -CommandName 'forge' -ScriptBlock {
             break
         }
         'forge;help;config;edit' {
+            break
+        }
+        'forge;help;fields' {
+            [CompletionResult]::new('set', 'set', [CompletionResultType]::ParameterValue, 'Set a persistent field')
+            [CompletionResult]::new('get', 'get', [CompletionResultType]::ParameterValue, 'Get a persistent field')
+            [CompletionResult]::new('clear', 'clear', [CompletionResultType]::ParameterValue, 'Clear a persistent field')
+            [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, 'List all persistent fields')
+            break
+        }
+        'forge;help;fields;set' {
+            break
+        }
+        'forge;help;fields;get' {
+            break
+        }
+        'forge;help;fields;clear' {
+            break
+        }
+        'forge;help;fields;list' {
             break
         }
         'forge;help;package' {

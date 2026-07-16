@@ -1,27 +1,27 @@
 # Print an optspec for argparse to handle cmd's options that are independent of any subcommand.
 function __fish_forge_global_optspecs
-	string join \n h/help V/version
+    string join \n h/help V/version
 end
 
 function __fish_forge_needs_command
-	# Figure out if the current invocation already has a command.
-	set -l cmd (commandline -opc)
-	set -e cmd[1]
-	argparse -s (__fish_forge_global_optspecs) -- $cmd 2>/dev/null
-	or return
-	if set -q argv[1]
-		# Also print the command, so this can be used to figure out what it is.
-		echo $argv[1]
-		return 1
-	end
-	return 0
+    # Figure out if the current invocation already has a command.
+    set -l cmd (commandline -opc)
+    set -e cmd[1]
+    argparse -s (__fish_forge_global_optspecs) -- $cmd 2>/dev/null
+    or return
+    if set -q argv[1]
+        # Also print the command, so this can be used to figure out what it is.
+        echo $argv[1]
+        return 1
+    end
+    return 0
 end
 
 function __fish_forge_using_subcommand
-	set -l cmd (__fish_forge_needs_command)
-	test -z "$cmd"
-	and return 1
-	contains -- $cmd[1] $argv
+    set -l cmd (__fish_forge_needs_command)
+    test -z "$cmd"
+    and return 1
+    contains -- $cmd[1] $argv
 end
 
 complete -c forge -n "__fish_forge_needs_command" -s h -l help -d 'Print help (see more with \'--help\')'
@@ -34,6 +34,7 @@ complete -c forge -n "__fish_forge_needs_command" -f -a "remove" -d 'Remove temp
 complete -c forge -n "__fish_forge_needs_command" -f -a "check" -d 'Check a template without executing it'
 complete -c forge -n "__fish_forge_needs_command" -f -a "trust" -d 'Manage template trust'
 complete -c forge -n "__fish_forge_needs_command" -f -a "config" -d 'Manage Forge configuration'
+complete -c forge -n "__fish_forge_needs_command" -f -a "fields" -d 'Manage persistent template fields'
 complete -c forge -n "__fish_forge_needs_command" -f -a "package" -d 'Manage remote template packages'
 complete -c forge -n "__fish_forge_needs_command" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c forge -n "__fish_forge_using_subcommand new" -s l -l local -d 'Use local .forge/templates'
@@ -86,6 +87,21 @@ complete -c forge -n "__fish_forge_using_subcommand config; and __fish_seen_subc
 complete -c forge -n "__fish_forge_using_subcommand config; and __fish_seen_subcommand_from help" -f -a "list" -d 'List all config keys'
 complete -c forge -n "__fish_forge_using_subcommand config; and __fish_seen_subcommand_from help" -f -a "edit" -d 'Open config.toml in $EDITOR'
 complete -c forge -n "__fish_forge_using_subcommand config; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c forge -n "__fish_forge_using_subcommand fields; and not __fish_seen_subcommand_from set get clear list help" -s h -l help -d 'Print help (see more with \'--help\')'
+complete -c forge -n "__fish_forge_using_subcommand fields; and not __fish_seen_subcommand_from set get clear list help" -f -a "set" -d 'Set a persistent field'
+complete -c forge -n "__fish_forge_using_subcommand fields; and not __fish_seen_subcommand_from set get clear list help" -f -a "get" -d 'Get a persistent field'
+complete -c forge -n "__fish_forge_using_subcommand fields; and not __fish_seen_subcommand_from set get clear list help" -f -a "clear" -d 'Clear a persistent field'
+complete -c forge -n "__fish_forge_using_subcommand fields; and not __fish_seen_subcommand_from set get clear list help" -f -a "list" -d 'List all persistent fields'
+complete -c forge -n "__fish_forge_using_subcommand fields; and not __fish_seen_subcommand_from set get clear list help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c forge -n "__fish_forge_using_subcommand fields; and __fish_seen_subcommand_from set" -s h -l help -d 'Print help'
+complete -c forge -n "__fish_forge_using_subcommand fields; and __fish_seen_subcommand_from get" -s h -l help -d 'Print help'
+complete -c forge -n "__fish_forge_using_subcommand fields; and __fish_seen_subcommand_from clear" -s h -l help -d 'Print help'
+complete -c forge -n "__fish_forge_using_subcommand fields; and __fish_seen_subcommand_from list" -s h -l help -d 'Print help'
+complete -c forge -n "__fish_forge_using_subcommand fields; and __fish_seen_subcommand_from help" -f -a "set" -d 'Set a persistent field'
+complete -c forge -n "__fish_forge_using_subcommand fields; and __fish_seen_subcommand_from help" -f -a "get" -d 'Get a persistent field'
+complete -c forge -n "__fish_forge_using_subcommand fields; and __fish_seen_subcommand_from help" -f -a "clear" -d 'Clear a persistent field'
+complete -c forge -n "__fish_forge_using_subcommand fields; and __fish_seen_subcommand_from help" -f -a "list" -d 'List all persistent fields'
+complete -c forge -n "__fish_forge_using_subcommand fields; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c forge -n "__fish_forge_using_subcommand package; and not __fish_seen_subcommand_from probe install remove update list help" -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c forge -n "__fish_forge_using_subcommand package; and not __fish_seen_subcommand_from probe install remove update list help" -f -a "probe" -d 'Probe templates from a remote repository'
 complete -c forge -n "__fish_forge_using_subcommand package; and not __fish_seen_subcommand_from probe install remove update list help" -f -a "install" -d 'Install templates from a remote repository'
@@ -105,16 +121,17 @@ complete -c forge -n "__fish_forge_using_subcommand package; and __fish_seen_sub
 complete -c forge -n "__fish_forge_using_subcommand package; and __fish_seen_subcommand_from help" -f -a "update" -d 'Update installed template package(s)'
 complete -c forge -n "__fish_forge_using_subcommand package; and __fish_seen_subcommand_from help" -f -a "list" -d 'List installed template packages'
 complete -c forge -n "__fish_forge_using_subcommand package; and __fish_seen_subcommand_from help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
-complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config package help" -f -a "new" -d 'Scaffold a new project from a template'
-complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config package help" -f -a "list" -d 'List available templates'
-complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config package help" -f -a "info" -d 'Print details about a template'
-complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config package help" -f -a "create" -d 'Scaffold a new blank template'
-complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config package help" -f -a "remove" -d 'Remove template(s)'
-complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config package help" -f -a "check" -d 'Check a template without executing it'
-complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config package help" -f -a "trust" -d 'Manage template trust'
-complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config package help" -f -a "config" -d 'Manage Forge configuration'
-complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config package help" -f -a "package" -d 'Manage remote template packages'
-complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config package help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
+complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config fields package help" -f -a "new" -d 'Scaffold a new project from a template'
+complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config fields package help" -f -a "list" -d 'List available templates'
+complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config fields package help" -f -a "info" -d 'Print details about a template'
+complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config fields package help" -f -a "create" -d 'Scaffold a new blank template'
+complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config fields package help" -f -a "remove" -d 'Remove template(s)'
+complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config fields package help" -f -a "check" -d 'Check a template without executing it'
+complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config fields package help" -f -a "trust" -d 'Manage template trust'
+complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config fields package help" -f -a "config" -d 'Manage Forge configuration'
+complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config fields package help" -f -a "fields" -d 'Manage persistent template fields'
+complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config fields package help" -f -a "package" -d 'Manage remote template packages'
+complete -c forge -n "__fish_forge_using_subcommand help; and not __fish_seen_subcommand_from new list info create remove check trust config fields package help" -f -a "help" -d 'Print this message or the help of the given subcommand(s)'
 complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from trust" -f -a "add" -d 'Trust a template and store its checksum'
 complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from trust" -f -a "remove" -d 'Revoke trust from a template'
 complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from trust" -f -a "list" -d 'List all trusted templates'
@@ -122,6 +139,10 @@ complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcom
 complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from config" -f -a "get" -d 'Get a config key'
 complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from config" -f -a "list" -d 'List all config keys'
 complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from config" -f -a "edit" -d 'Open config.toml in $EDITOR'
+complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from fields" -f -a "set" -d 'Set a persistent field'
+complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from fields" -f -a "get" -d 'Get a persistent field'
+complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from fields" -f -a "clear" -d 'Clear a persistent field'
+complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from fields" -f -a "list" -d 'List all persistent fields'
 complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from package" -f -a "probe" -d 'Probe templates from a remote repository'
 complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from package" -f -a "install" -d 'Install templates from a remote repository'
 complete -c forge -n "__fish_forge_using_subcommand help; and __fish_seen_subcommand_from package" -f -a "remove" -d 'Remove installed template package(s)'

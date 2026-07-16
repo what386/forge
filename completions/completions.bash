@@ -25,6 +25,9 @@ _forge() {
             forge,create)
                 cmd="forge__subcmd__create"
                 ;;
+            forge,fields)
+                cmd="forge__subcmd__fields"
+                ;;
             forge,help)
                 cmd="forge__subcmd__help"
                 ;;
@@ -76,6 +79,36 @@ _forge() {
             forge__subcmd__config__subcmd__help,set)
                 cmd="forge__subcmd__config__subcmd__help__subcmd__set"
                 ;;
+            forge__subcmd__fields,clear)
+                cmd="forge__subcmd__fields__subcmd__clear"
+                ;;
+            forge__subcmd__fields,get)
+                cmd="forge__subcmd__fields__subcmd__get"
+                ;;
+            forge__subcmd__fields,help)
+                cmd="forge__subcmd__fields__subcmd__help"
+                ;;
+            forge__subcmd__fields,list)
+                cmd="forge__subcmd__fields__subcmd__list"
+                ;;
+            forge__subcmd__fields,set)
+                cmd="forge__subcmd__fields__subcmd__set"
+                ;;
+            forge__subcmd__fields__subcmd__help,clear)
+                cmd="forge__subcmd__fields__subcmd__help__subcmd__clear"
+                ;;
+            forge__subcmd__fields__subcmd__help,get)
+                cmd="forge__subcmd__fields__subcmd__help__subcmd__get"
+                ;;
+            forge__subcmd__fields__subcmd__help,help)
+                cmd="forge__subcmd__fields__subcmd__help__subcmd__help"
+                ;;
+            forge__subcmd__fields__subcmd__help,list)
+                cmd="forge__subcmd__fields__subcmd__help__subcmd__list"
+                ;;
+            forge__subcmd__fields__subcmd__help,set)
+                cmd="forge__subcmd__fields__subcmd__help__subcmd__set"
+                ;;
             forge__subcmd__help,check)
                 cmd="forge__subcmd__help__subcmd__check"
                 ;;
@@ -84,6 +117,9 @@ _forge() {
                 ;;
             forge__subcmd__help,create)
                 cmd="forge__subcmd__help__subcmd__create"
+                ;;
+            forge__subcmd__help,fields)
+                cmd="forge__subcmd__help__subcmd__fields"
                 ;;
             forge__subcmd__help,help)
                 cmd="forge__subcmd__help__subcmd__help"
@@ -117,6 +153,18 @@ _forge() {
                 ;;
             forge__subcmd__help__subcmd__config,set)
                 cmd="forge__subcmd__help__subcmd__config__subcmd__set"
+                ;;
+            forge__subcmd__help__subcmd__fields,clear)
+                cmd="forge__subcmd__help__subcmd__fields__subcmd__clear"
+                ;;
+            forge__subcmd__help__subcmd__fields,get)
+                cmd="forge__subcmd__help__subcmd__fields__subcmd__get"
+                ;;
+            forge__subcmd__help__subcmd__fields,list)
+                cmd="forge__subcmd__help__subcmd__fields__subcmd__list"
+                ;;
+            forge__subcmd__help__subcmd__fields,set)
+                cmd="forge__subcmd__help__subcmd__fields__subcmd__set"
                 ;;
             forge__subcmd__help__subcmd__package,install)
                 cmd="forge__subcmd__help__subcmd__package__subcmd__install"
@@ -209,7 +257,7 @@ _forge() {
 
     case "${cmd}" in
         forge)
-            opts="-h -V --help --version new list info create remove check trust config package help"
+            opts="-h -V --help --version new list info create remove check trust config fields package help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -223,7 +271,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__check)
-            opts="-l -g -h --local --global --help <TEMPLATE>"
+            opts="-l -g -h --local --global --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -265,7 +313,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__config__subcmd__get)
-            opts="-h --help <KEY>"
+            opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -377,7 +425,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__config__subcmd__set)
-            opts="-h --help <KEY> <VALUE>"
+            opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -391,7 +439,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__create)
-            opts="-l -g -h --local --global --help <NAME>"
+            opts="-l -g -h --local --global --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -404,8 +452,162 @@ _forge() {
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
             return 0
             ;;
+        forge__subcmd__fields)
+            opts="-h --help set get clear list help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__fields__subcmd__clear)
+            opts="-h --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__fields__subcmd__get)
+            opts="-h --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__fields__subcmd__help)
+            opts="set get clear list help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__fields__subcmd__help__subcmd__clear)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__fields__subcmd__help__subcmd__get)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__fields__subcmd__help__subcmd__help)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__fields__subcmd__help__subcmd__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__fields__subcmd__help__subcmd__set)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__fields__subcmd__list)
+            opts="-h --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__fields__subcmd__set)
+            opts="-h --help"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
         forge__subcmd__help)
-            opts="new list info create remove check trust config package help"
+            opts="new list info create remove check trust config fields package help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -505,6 +707,76 @@ _forge() {
         forge__subcmd__help__subcmd__create)
             opts=""
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__help__subcmd__fields)
+            opts="set get clear list"
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__help__subcmd__fields__subcmd__clear)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__help__subcmd__fields__subcmd__get)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__help__subcmd__fields__subcmd__list)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+        forge__subcmd__help__subcmd__fields__subcmd__set)
+            opts=""
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 4 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
             fi
@@ -727,7 +999,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__info)
-            opts="-l -g -h --local --global --help <TEMPLATE>"
+            opts="-l -g -h --local --global --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -755,7 +1027,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__new)
-            opts="-l -g -h --local --global --default --help <TEMPLATE> <NAME>"
+            opts="-l -g -h --local --global --default --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -881,7 +1153,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__package__subcmd__install)
-            opts="-h --interactive --help <REPO> [TEMPLATES]..."
+            opts="-h --interactive --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -909,7 +1181,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__package__subcmd__probe)
-            opts="-h --help <REPO>"
+            opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -923,7 +1195,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__package__subcmd__remove)
-            opts="-h --help [NAMES]..."
+            opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -937,7 +1209,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__package__subcmd__update)
-            opts="-h --help [NAMES]..."
+            opts="-h --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -951,7 +1223,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__remove)
-            opts="-l -g -h --local --global --help <NAMES>..."
+            opts="-l -g -h --local --global --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 2 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -979,7 +1251,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__trust__subcmd__add)
-            opts="-l -g -h --local --global --help <TEMPLATE>"
+            opts="-l -g -h --local --global --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -1077,7 +1349,7 @@ _forge() {
             return 0
             ;;
         forge__subcmd__trust__subcmd__remove)
-            opts="-l -g -h --local --global --help <TEMPLATE>"
+            opts="-l -g -h --local --global --help"
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 3 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0

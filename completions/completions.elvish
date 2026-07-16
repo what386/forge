@@ -30,6 +30,7 @@ set edit:completion:arg-completer[forge] = {|@words|
             cand check 'Check a template without executing it'
             cand trust 'Manage template trust'
             cand config 'Manage Forge configuration'
+            cand fields 'Manage persistent template fields'
             cand package 'Manage remote template packages'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
@@ -166,6 +167,48 @@ set edit:completion:arg-completer[forge] = {|@words|
         }
         &'forge;config;help;help'= {
         }
+        &'forge;fields'= {
+            cand -h 'Print help (see more with ''--help'')'
+            cand --help 'Print help (see more with ''--help'')'
+            cand set 'Set a persistent field'
+            cand get 'Get a persistent field'
+            cand clear 'Clear a persistent field'
+            cand list 'List all persistent fields'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'forge;fields;set'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'forge;fields;get'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'forge;fields;clear'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'forge;fields;list'= {
+            cand -h 'Print help'
+            cand --help 'Print help'
+        }
+        &'forge;fields;help'= {
+            cand set 'Set a persistent field'
+            cand get 'Get a persistent field'
+            cand clear 'Clear a persistent field'
+            cand list 'List all persistent fields'
+            cand help 'Print this message or the help of the given subcommand(s)'
+        }
+        &'forge;fields;help;set'= {
+        }
+        &'forge;fields;help;get'= {
+        }
+        &'forge;fields;help;clear'= {
+        }
+        &'forge;fields;help;list'= {
+        }
+        &'forge;fields;help;help'= {
+        }
         &'forge;package'= {
             cand -h 'Print help (see more with ''--help'')'
             cand --help 'Print help (see more with ''--help'')'
@@ -226,6 +269,7 @@ set edit:completion:arg-completer[forge] = {|@words|
             cand check 'Check a template without executing it'
             cand trust 'Manage template trust'
             cand config 'Manage Forge configuration'
+            cand fields 'Manage persistent template fields'
             cand package 'Manage remote template packages'
             cand help 'Print this message or the help of the given subcommand(s)'
         }
@@ -265,6 +309,20 @@ set edit:completion:arg-completer[forge] = {|@words|
         &'forge;help;config;list'= {
         }
         &'forge;help;config;edit'= {
+        }
+        &'forge;help;fields'= {
+            cand set 'Set a persistent field'
+            cand get 'Get a persistent field'
+            cand clear 'Clear a persistent field'
+            cand list 'List all persistent fields'
+        }
+        &'forge;help;fields;set'= {
+        }
+        &'forge;help;fields;get'= {
+        }
+        &'forge;help;fields;clear'= {
+        }
+        &'forge;help;fields;list'= {
         }
         &'forge;help;package'= {
             cand probe 'Probe templates from a remote repository'

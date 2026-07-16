@@ -254,6 +254,87 @@ esac
     ;;
 esac
 ;;
+(fields)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help (see more with '\''--help'\'')]' \
+'--help[Print help (see more with '\''--help'\'')]' \
+":: :_forge__subcmd__fields_commands" \
+"*::: :->fields" \
+&& ret=0
+
+    case $state in
+    (fields)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:forge-fields-command-$line[1]:"
+        case $line[1] in
+            (set)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':assignment -- Field assignment in NAME=VALUE form:_default' \
+&& ret=0
+;;
+(get)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Field name:_default' \
+&& ret=0
+;;
+(clear)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+':name -- Field name:_default' \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+'-h[Print help]' \
+'--help[Print help]' \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+":: :_forge__subcmd__fields__subcmd__help_commands" \
+"*::: :->help" \
+&& ret=0
+
+    case $state in
+    (help)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:forge-fields-help-command-$line[1]:"
+        case $line[1] in
+            (set)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(get)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(clear)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(help)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
+        esac
+    ;;
+esac
+;;
 (package)
 _arguments "${_arguments_options[@]}" : \
 '-h[Print help (see more with '\''--help'\'')]' \
@@ -444,6 +525,38 @@ _arguments "${_arguments_options[@]}" : \
     ;;
 esac
 ;;
+(fields)
+_arguments "${_arguments_options[@]}" : \
+":: :_forge__subcmd__help__subcmd__fields_commands" \
+"*::: :->fields" \
+&& ret=0
+
+    case $state in
+    (fields)
+        words=($line[1] "${words[@]}")
+        (( CURRENT += 1 ))
+        curcontext="${curcontext%:*:*}:forge-help-fields-command-$line[1]:"
+        case $line[1] in
+            (set)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(get)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(clear)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+(list)
+_arguments "${_arguments_options[@]}" : \
+&& ret=0
+;;
+        esac
+    ;;
+esac
+;;
 (package)
 _arguments "${_arguments_options[@]}" : \
 ":: :_forge__subcmd__help__subcmd__package_commands" \
@@ -504,6 +617,7 @@ _forge_commands() {
 'check:Check a template without executing it' \
 'trust:Manage template trust' \
 'config:Manage Forge configuration' \
+'fields:Manage persistent template fields' \
 'package:Manage remote template packages' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -586,6 +700,73 @@ _forge__subcmd__create_commands() {
     local commands; commands=()
     _describe -t commands 'forge create commands' commands "$@"
 }
+(( $+functions[_forge__subcmd__fields_commands] )) ||
+_forge__subcmd__fields_commands() {
+    local commands; commands=(
+'set:Set a persistent field' \
+'get:Get a persistent field' \
+'clear:Clear a persistent field' \
+'list:List all persistent fields' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'forge fields commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__fields__subcmd__clear_commands] )) ||
+_forge__subcmd__fields__subcmd__clear_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge fields clear commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__fields__subcmd__get_commands] )) ||
+_forge__subcmd__fields__subcmd__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge fields get commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__fields__subcmd__help_commands] )) ||
+_forge__subcmd__fields__subcmd__help_commands() {
+    local commands; commands=(
+'set:Set a persistent field' \
+'get:Get a persistent field' \
+'clear:Clear a persistent field' \
+'list:List all persistent fields' \
+'help:Print this message or the help of the given subcommand(s)' \
+    )
+    _describe -t commands 'forge fields help commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__fields__subcmd__help__subcmd__clear_commands] )) ||
+_forge__subcmd__fields__subcmd__help__subcmd__clear_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge fields help clear commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__fields__subcmd__help__subcmd__get_commands] )) ||
+_forge__subcmd__fields__subcmd__help__subcmd__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge fields help get commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__fields__subcmd__help__subcmd__help_commands] )) ||
+_forge__subcmd__fields__subcmd__help__subcmd__help_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge fields help help commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__fields__subcmd__help__subcmd__list_commands] )) ||
+_forge__subcmd__fields__subcmd__help__subcmd__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge fields help list commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__fields__subcmd__help__subcmd__set_commands] )) ||
+_forge__subcmd__fields__subcmd__help__subcmd__set_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge fields help set commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__fields__subcmd__list_commands] )) ||
+_forge__subcmd__fields__subcmd__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge fields list commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__fields__subcmd__set_commands] )) ||
+_forge__subcmd__fields__subcmd__set_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge fields set commands' commands "$@"
+}
 (( $+functions[_forge__subcmd__help_commands] )) ||
 _forge__subcmd__help_commands() {
     local commands; commands=(
@@ -597,6 +778,7 @@ _forge__subcmd__help_commands() {
 'check:Check a template without executing it' \
 'trust:Manage template trust' \
 'config:Manage Forge configuration' \
+'fields:Manage persistent template fields' \
 'package:Manage remote template packages' \
 'help:Print this message or the help of the given subcommand(s)' \
     )
@@ -641,6 +823,36 @@ _forge__subcmd__help__subcmd__config__subcmd__set_commands() {
 _forge__subcmd__help__subcmd__create_commands() {
     local commands; commands=()
     _describe -t commands 'forge help create commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__help__subcmd__fields_commands] )) ||
+_forge__subcmd__help__subcmd__fields_commands() {
+    local commands; commands=(
+'set:Set a persistent field' \
+'get:Get a persistent field' \
+'clear:Clear a persistent field' \
+'list:List all persistent fields' \
+    )
+    _describe -t commands 'forge help fields commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__help__subcmd__fields__subcmd__clear_commands] )) ||
+_forge__subcmd__help__subcmd__fields__subcmd__clear_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge help fields clear commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__help__subcmd__fields__subcmd__get_commands] )) ||
+_forge__subcmd__help__subcmd__fields__subcmd__get_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge help fields get commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__help__subcmd__fields__subcmd__list_commands] )) ||
+_forge__subcmd__help__subcmd__fields__subcmd__list_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge help fields list commands' commands "$@"
+}
+(( $+functions[_forge__subcmd__help__subcmd__fields__subcmd__set_commands] )) ||
+_forge__subcmd__help__subcmd__fields__subcmd__set_commands() {
+    local commands; commands=()
+    _describe -t commands 'forge help fields set commands' commands "$@"
 }
 (( $+functions[_forge__subcmd__help__subcmd__help_commands] )) ||
 _forge__subcmd__help__subcmd__help_commands() {
