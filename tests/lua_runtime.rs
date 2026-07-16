@@ -527,6 +527,47 @@ fn prog_cargo_commands_emit_expected_argv() {
 }
 
 #[test]
+fn prog_dotnet_commands_emit_expected_argv() {
+    let (mut cfg, _tmp) = base_cfg();
+    let runner = Arc::new(RecordingExecRunner::default());
+    cfg.allowed_programs = vec!["dotnet".to_string()];
+    cfg.exec = Some(runner.clone());
+    let main = cfg.template_dir.join("main.lua");
+    fs::write(
+        &main,
+        r#"
+        forge.prog.dotnet.new("sln", { name = "my-app", format = "slnx" })
+        forge.prog.dotnet.new("console", { name = "app", output = "src/app", no_restore = true })
+        forge.prog.dotnet.sln_add("my-app.slnx", "src/app/app.csproj")
+        forge.prog.dotnet.restore("my-app.slnx", { use_lock_file = true })
+        "#,
+    )
+    .expect("write main");
+
+    let mut rt = Runtime::new(cfg);
+    rt.run(main.to_string_lossy().as_ref()).expect("run");
+    let calls = runner.calls.lock().expect("calls lock").clone();
+    assert_eq!(
+        calls,
+        vec![
+            vec!["dotnet", "new", "sln", "--name", "my-app", "--format", "slnx"],
+            vec![
+                "dotnet",
+                "new",
+                "console",
+                "--name",
+                "app",
+                "--output",
+                "src/app",
+                "--no-restore"
+            ],
+            vec!["dotnet", "sln", "my-app.slnx", "add", "src/app/app.csproj"],
+            vec!["dotnet", "restore", "my-app.slnx", "--use-lock-file"],
+        ]
+    );
+}
+
+#[test]
 fn prog_cargo_requires_program_allowlist() {
     let (cfg, _tmp) = base_cfg();
     let main = cfg.template_dir.join("main.lua");

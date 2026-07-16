@@ -53,6 +53,9 @@ forge.prog.cargo.run(...)
 forge.prog.cargo.fmt(...)
 forge.prog.cargo.clippy(...)
 forge.prog.cargo.gen_lockfile(...)
+forge.prog.dotnet.new(template, opts?)
+forge.prog.dotnet.sln_add(solution, project)
+forge.prog.dotnet.restore(solution, opts?)
 ```
 
 ## Logging
