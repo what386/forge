@@ -1,6 +1,13 @@
 # Changelog — forge
 
-*Generated on 2026-07-16*
+*Generated on 2026-08-01*
+
+## 0.4.1 — 2026-08-01
+
+### Changes
+
+- update init flow
+
 
 ## 0.4.0 — 2026-07-16
 
