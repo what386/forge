@@ -15,6 +15,7 @@ pub fn run(name: String, local: bool, global: bool) -> Result<()> {
         ResolveScope::Local => (layout.local_templates, layout.local_root),
         ResolveScope::Global => (layout.global_templates, layout.global_root),
     };
+    initialize_forge_root(&forge_root)?;
     let dir = root.join(&name);
     if dir.exists() {
         bail!("template already exists: {}", dir.display());
@@ -49,6 +50,33 @@ pub fn run(name: String, local: bool, global: bool) -> Result<()> {
     Ok(())
 }
 
+fn initialize_forge_root(forge_root: &std::path::Path) -> Result<()> {
+    fs::create_dir_all(forge_root.join("packages"))
+        .with_context(|| format!("failed to create {}", forge_root.join("packages").display()))?;
+
+    let gitignore = forge_root.join(".gitignore");
+    let existing = if gitignore.exists() {
+        fs::read_to_string(&gitignore)
+            .with_context(|| format!("failed to read {}", gitignore.display()))?
+    } else {
+        String::new()
+    };
+
+    let mut contents = existing;
+    for entry in ["packages/*", "trust.json"] {
+        if !contents.lines().any(|line| line.trim() == entry) {
+            if !contents.is_empty() && !contents.ends_with('\n') {
+                contents.push('\n');
+            }
+            contents.push_str(entry);
+            contents.push('\n');
+        }
+    }
+    fs::write(&gitignore, contents)
+        .with_context(|| format!("failed to write {}", gitignore.display()))?;
+    Ok(())
+}
+
 fn manifest_contents(name: &str, forge_version: &str, user: &UserConfig) -> String {
     let mut out = format!(
         "[package]\nname = \"{}\"\nversion = \"0.1.0\"\ndescription = \"TODO\"\nmin_forge_version = \"{}\"\n",
@@ -76,6 +104,35 @@ fn toml_escape(value: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn initialize_forge_root_creates_package_dir_and_ignore_rules() {
+        let tmp = tempfile::tempdir().expect("tmp");
+        let forge_root = tmp.path().join(".forge");
+
+        initialize_forge_root(&forge_root).expect("initialize");
+
+        assert!(forge_root.join("packages").is_dir());
+        assert_eq!(
+            fs::read_to_string(forge_root.join(".gitignore")).expect("gitignore"),
+            "packages/*\ntrust.json\n"
+        );
+    }
+
+    #[test]
+    fn initialize_forge_root_preserves_existing_ignore_rules() {
+        let tmp = tempfile::tempdir().expect("tmp");
+        let forge_root = tmp.path().join(".forge");
+        fs::create_dir_all(&forge_root).expect("forge root");
+        fs::write(forge_root.join(".gitignore"), "index.json\npackages/*\n").expect("write");
+
+        initialize_forge_root(&forge_root).expect("initialize");
+
+        assert_eq!(
+            fs::read_to_string(forge_root.join(".gitignore")).expect("gitignore"),
+            "index.json\npackages/*\ntrust.json\n"
+        );
+    }
 
     #[test]
     fn manifest_contents_without_profile() {
